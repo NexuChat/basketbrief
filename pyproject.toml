@@ -1,0 +1,14 @@
+[project]
+name = "basketbrief"
+version = "0.1.0"
+description = "Field evidence followed through to approved donor reports. Built with Strands Agents."
+requires-python = ">=3.11"
+license = {text = "MIT"}
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.coverage.run]
+source = ["basketbrief"]
+
