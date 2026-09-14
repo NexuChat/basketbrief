@@ -1,96 +1,67 @@
-# BasketBrief
+# BasketBrief — follow through when the report changes
 
-**The report was sent. Then the count changed. BasketBrief follows through.**
+**An agent for relief coordinators: chase missing evidence, reconcile corrections, and keep every donor on the approved version.**
 
-**Live demo:** https://basketbrief.mlki.app — no login or AWS account required
-**Code:** https://github.com/NexuChat/basketbrief
-**Track:** Good Neighbor Agents
-
-BasketBrief helps a small volunteer relief group finish donor reports without making its coordinator chase every receipt and correction. It reads incoming evidence, asks the contributor who can resolve a gap, prepares English and Arabic reports, waits for approval of an exact version, and delivers immutable snapshots to two donor inboxes.
-
-The harder part begins after delivery. If a field correction changes a reported count, BasketBrief invalidates the old approval, shows exactly what changed, follows up on any new discrepancy, and sends an approved amendment. It preserves the original report instead of silently rewriting history.
+[Try the live story](https://basketbrief.mlki.app) · [Watch the film](https://basketbrief.mlki.app/static/film.html) · [Source code](https://github.com/NexuChat/basketbrief) · Good Neighbor Agents
 
 ## Inspiration
 
-Amal coordinates a fictional neighbourhood flood-relief group. Rana has the receipts. Sami has the distribution counts. Two donors need reports from the same evidence. One transport receipt is missing, so Amal becomes a switchboard: ask, wait, re-ask, reconcile the figures, and keep two reports consistent.
+A small relief team's work does not end when supplies arrive. Its coordinator still has to find receipts, reconcile volunteers' updates, and explain the same figures to different donors. A late correction starts that work again.
 
-Then Sami corrects 92 delivered kits to 88 after the first reports have already gone out. The existing figures now leave four kits unaccounted for. That arithmetic establishes a discrepancy; it does **not** establish how many households were affected. BasketBrief keeps that distinction visible and asks Sami to check the delivery and storage records. His follow-up confirms 12 returned kits, closing the discrepancy before the amendment is approved.
+BasketBrief tackles that follow-up. Our demonstration follows a fictional coordinator, Amal, and two contributors: Rana has the receipts; Sami has the delivery counts. Two donors need reports. A missing transport receipt is the first gap. Then, after the reports are approved and delivered, Sami corrects the delivery count from 92 kits to 88.
 
-The scenario and every participant are synthetic. The reporting burden is real. The [Center for Effective Philanthropy](https://cep.org/blog/reimagining-reporting-part-1-insights-from-the-field/) reported a 2023 study in which nonprofits reduced time spent on one funder's reporting requirements from eight hours to six. [Stanford Social Innovation Review](https://ssir.org/articles/entry/the_nonprofit_starvation_cycle/) described a grantee spending 31 percent of a grant's value on administration while the funder allowed 13 percent. These sources establish a reporting burden; neither source tested or endorsed BasketBrief, and we derive no product savings from them.
+That second moment is the heart of BasketBrief: a correction must reach everyone who received the original, with its evidence and approval history intact.
 
-## What the working demo does
+## What it does
 
-1. Three sources arrive: a supplies receipt, a transport expense without its receipt, and a field distribution message.
-2. A Strands agent on Amazon Bedrock Nova Pro reads the sources and asks Rana for the missing transport receipt. The same answer serves both donor reports.
-3. Rana uploads a synthetic receipt image. Nova Pro transcribes it through Amazon Bedrock AgentCore Runtime. The coordinator can compare the transcription with the original image.
-4. Amal reviews and approves version 2. The approval is bound to that report's content hash. English and Arabic snapshots are delivered to separate in-app donor inboxes.
-5. Sami corrects delivered kits from 92 to 88. BasketBrief refuses reuse of the old approval with HTTP 409 and asks Sami about the four-kit discrepancy.
-6. Sami confirms that 12 kits were returned. The discrepancy closes. BasketBrief shows both changes: delivered 92 → 88 and returned 8 → 12.
-7. Amal approves the amendment. Both donors receive version 4, while their original version 2 remains unchanged.
+BasketBrief reads incoming evidence, asks the responsible contributor to resolve a gap, and prepares reports for human approval. It delivers the approved version to separate English and Arabic donor inboxes inside the application.
 
-The guided button supplies fictional replies and approvals, while model calls, tool calls, versioning, guardrails, database writes, and inbox delivery execute live. Visitors can also switch roles and perform each step themselves.
+Watch the complete loop in the live demonstration:
 
-## Work with a real team account
+1. **Ask the person who knows.** The agent finds USD 60 without a receipt and asks Rana. Her answer serves both donor reports.
+2. **Keep the source visible.** Rana uploads a receipt image. The reader classifies it, transcribes it, compares the transcription with the image, and checks the arithmetic. Amal can inspect the original.
+3. **Review before sharing.** Amal approves one exact version. Each donor receives a saved snapshot.
+4. **Follow a late correction.** Sami changes 92 delivered to 88. The old approval cannot authorize the changed report. Four kits now need an explanation, so BasketBrief asks Sami to check the records.
+5. **Close the gap without inventing impact.** Sami confirms 12 returned. Amal reviews both changes and approves an amendment. Donors keep the original alongside the new version. Unique households remain unknown.
 
-The optional `/team` workspace adds individual accounts, one-use invitations, project roles, multiple expenses, original currency totals, and reviewed exchange rates. Uploads and follow-up questions create persistent notifications for the responsible members. Donors see approved snapshots only.
+The guided story supplies fictional replies and approvals; Strands inference, tools, evidence storage and donor inbox delivery execute live. Visitors can also perform the steps themselves.
 
-A contributor can attach a requested receipt to the original expense without creating another charge. A separate-browser live test exercised the contributor upload, Strands review, coordinator approval, and donor receipt. PDF originals remain available for human review. A private, owner-authorized Gmail app-password test imported a selected PDF, blocked duplication and cross-account access, and disconnected afterward. No private mail is part of this submission.
+## Work with separate accounts
 
-Gmail and Microsoft OAuth handlers still need public provider registration and live consent tests; optional external notification emails still need an application SMTP sender. In-app notifications and direct uploads work independently.
+The [team workspace](https://basketbrief.mlki.app/team) supports individual accounts, project invitations, contributor uploads, reviewer access and donor-only approved reports. Persistent in-app notifications tell the responsible person when evidence or a question arrives.
 
-## How it works
+A receipt requested for an existing expense completes that expense without a second charge. Multiple expenses retain their original currencies; a combined reporting total requires reviewed exchange rates with dates and sources. Selected PNG/JPEG files, PDFs and saved-email attachments can be imported. PDF originals remain available; multi-page documents require full human review.
 
-The guided demonstration uses one Strands `Agent`, seven scoped tools, a sequential tool executor, and Amazon Bedrock Nova Pro at temperature zero. A separate project-scoped Strands agent follows evidence in the signed-in team workspace using three tools; both workflows keep human approval outside the model.
+## How we built it
 
-The model interprets free-form evidence and chooses the next tool. Code owns the facts and irreversible boundaries:
+**Strands Agents SDK and Amazon Bedrock Nova Pro** interpret evidence and choose tools for the next follow-up. The guided story uses seven scoped tools; the team workspace uses a separate project-scoped three-tool agent. Neither agent can approve a report.
 
-- expense totals must be unambiguously associated with currency or an explicit total;
-- loaded, delivered, returned, and household counts are separate typed facts;
-- denied or wrongly associated numbers cannot enter a fact;
-- a second transaction cannot silently overwrite the one transaction supported by this demo;
-- contributor roles cannot approve or deliver reports;
-- approvals are bound to one revision and SHA-256 content hash;
-- a post-turn gate computes known gaps and delivers a scoped follow-up if the model omitted it;
-- a direct answer to a scoped field question is recorded before another model turn only when each stated field has exactly one accepted interpretation; ambiguous answers remain pending.
+**Amazon Bedrock AgentCore Runtime** hosts the image reader. A recorded in-process Bedrock fallback keeps the same reader available if Runtime fails. **AgentCore Memory** provides advisory vendor history for the fictional demo team; it is not evidence that a vendor is trustworthy or fraudulent.
 
-Reports use deterministic English and Arabic templates over stored facts. The model does not write report figures or narrative. Delivery means a persisted message in this application's donor inbox, with a unique receipt; it is not email delivery or proof that aid reached a household.
+Deterministic code owns arithmetic, permissions, saved facts, follow-up persistence, versioning and delivery. Each approval binds to a report revision and content hash. Reports use templates over stored facts rather than model-written financial claims.
 
-## Why the AWS pieces are there
+[Architecture](https://github.com/NexuChat/basketbrief/blob/main/docs/architecture.png) · [Verification and limits](https://github.com/NexuChat/basketbrief/blob/main/docs/EVALUATION.md)
 
-- **Amazon Bedrock + Nova Pro:** reasoning over incoming messages and tool selection.
-- **Amazon Bedrock AgentCore Runtime:** the stateless receipt-image reader. If Runtime is unavailable, the app records that it used the in-process Bedrock fallback.
-- **Amazon Bedrock AgentCore Memory:** an advisory vendor-name history shared across demo workspaces. A new vendor is a review hint, not a fraud verdict; Memory failure never blocks a report.
-- **Dedicated workload identity:** the public service uses a narrowly scoped application identity instead of an expiring human login session.
+## What we verified
 
-The website gives Amal, Rana, Sami, and each donor separate capability links inside a fresh fictional workspace. Judges need no login, bot, inbox, or cloud account.
+- 121 automated tests passed, including 30 adversarial boundary cases. These test code boundaries; they are not a live-model attack benchmark.
+- Live guided runs exercised receipt follow-up, first approval, a late correction, refusal of stale approval and delivery of both amendments.
+- A separate-account browser test exercised contributor upload → reviewer notification → agent follow-up → coordinator approval → donor access. Donors saw no report before approval.
+- An owner-authorized Gmail app-password test imported one selected PDF, retained its original, and blocked duplicate import and access from another account. The test connection was removed afterward; no private mail is published.
+- A private document review exposed incorrect assumptions about statements and utility tables. The reader now rejects statements and transfers as purchase evidence. Unconfirmed readings remain for review.
 
-## What we fixed under pressure
+## Challenges and lessons
 
-An independent review found that the first submission overstated what four missing kits meant, compared an asymmetrical “41 manual acts” model with two approval decisions, and described guard-only prompt-injection cases as if a live model had refused them. Those claims were withdrawn.
+A number appearing in a document is not enough: its meaning matters. A debit, a meter reading and a purchase total are different facts. We classify before extracting and require source review when the evidence is unclear.
 
-The review also found real boundary defects: a receipt quantity could be accepted as money, a denied number could be attached to the wrong field, a second transaction could overwrite the first, and one generated follow-up type could not be delivered. Regression tests now pin each case.
+Corrections exposed another boundary: the system must preserve supported information while asking about what remains unresolved. It must also retire approval of an earlier revision. Those behaviors are enforced in code, with regression tests and visible report history.
 
-The extended story initially failed when a terse response such as `Returned kits: 12.` reached a fourth model cycle. The field parser rejected sentence-ending punctuation, the model retried the wrong tool shape, and Strands ended the loop. A test reproduced the parser defect. The fix accepts the labelled form, records unambiguous replies at the deterministic boundary, and leaves ambiguous replies pending.
+## Current scope and next steps
 
-## Evidence
+All demonstration participants and evidence are fictional. We have not run an organization pilot or measured human time saved. Our evidence establishes working software behavior, not independently verified payments or aid outcomes.
 
-- **121 tests pass**, including 30 adversarial guard cases and document-scope review regressions.
-- Three consecutive full staging journeys before the later document-scope and team updates completed in **66.0 s, 64.6 s, and 63.0 s** with 88 delivered, 12 returned, zero unresolved questions, four donor snapshots, and no browser errors.
-- Every run preserved the first donor snapshots, rejected the stale approval, and delivered the approved amendment to both donors.
-- `scripts/baseline.py` executes the full local-parser workflow and reports persisted interactions: two contributor questions, two contributor replies, two coordinator approvals, and four donor deliveries. It makes no claim about human time or productivity.
+OCR can still fail, including on Arabic documents. Gmail app-password import was tested; Google/Microsoft OAuth activation and external SMTP notification delivery are not live-verified. Team notifications and donor delivery currently work inside BasketBrief. Bank statements are outside its purchase-receipt scope.
 
-The prompt-injection tests exercise storage and role boundaries, not a live model. Receipt transcription is tested on the included Latin-script fixture; OCR can still be wrong, so the original image remains available to the coordinator. Detailed evidence and limitations are in `docs/EVALUATION.md`.
+The next validation is a supervised trial with a relief coordinator, measuring task completion, corrections caught and time spent reviewing. Provider OAuth activation and an independent security review follow before broader use.
 
-## What we learned
-
-Reliable agent work depends on deciding which behavior may remain probabilistic. Interpretation and wording can belong to the model. Arithmetic, provenance, permissions, follow-up delivery, versioning, and approval validity need deterministic checks and an audit trail.
-
-We also learned to distinguish repeatable arithmetic from a valid measurement. A script can reproduce an unfair comparison perfectly. Directly logged questions, replies, approvals, report versions, and delivery receipts are the defensible evidence here.
-
-## What's next
-
-The guided demonstration stays deliberately small. The signed-in team workspace now supports multiple expenses and real account memberships. Next come provider OAuth activation, an application email sender, donor-defined reporting requirements, an independent security review, and a real pilot before making claims about time saved or outcomes improved.
-
-## Honest scope
-
-All organizations, people, receipts, donors, and distribution events in the demo are fictional. There is no field pilot, donor endorsement, independent verification of delivery, measured human baseline, or measured savings. A field-reported kit count is not proof that a household received aid, and a receipt is not proof of payment or impact.
+Built during this hackathon with AI coding assistance. Persistence/channel patterns were reused from an abandoned entry in the same competition; the domain-specific evidence, reconciliation, vision and approval workflows were implemented here. Public source: MIT license.

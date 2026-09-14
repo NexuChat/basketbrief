@@ -58,7 +58,7 @@ async function untilIdle(limit = 150) {
 
 async function playStory() {
   if (storyRunning) return;
-  storyRunning = true; storyAbort = false;
+  storyRunning = true; storyAbort = false; document.body.classList.add("story-active");
   const N = 11;
   try {
     if (state?.report?.status === 'delivered' || state?.evidence?.length > 3) await start(true);
@@ -130,7 +130,7 @@ async function playStory() {
   } catch (e) {
     if (String(e.message) !== 'stopped') captionDone('The run stopped: ' + e.message);
     else $('#story-caption').classList.remove('show');
-  } finally { storyRunning = false; await refresh(true); }
+  } finally { storyRunning = false; document.body.classList.remove("story-active"); await refresh(true); }
 }
 
 /* ── bring your own receipt ───────────────────────────────────────────────
@@ -149,7 +149,7 @@ function ownReceipt() {
     body = `<label class="own-drop" for="own-file">
         <input id="own-file" type="file" accept="image/png,image/jpeg">
         <b>Drop a receipt here</b>
-        <span>Any real receipt from your wallet — a coffee, a taxi, a hardware shop. PNG or JPEG, under 2 MB.</span>
+        <span>A clear purchase receipt, with its final total and currency visible. PNG or JPEG, under 2 MB.</span>
         <span class="own-cta">Choose an image</span>
       </label>
       <p class="own-foot">It is read by the same agent this team uses, and thrown away immediately. Nothing is stored and nothing enters a workspace.</p>`;
@@ -183,8 +183,8 @@ function ownReceipt() {
       <button class="button secondary" data-action="own-reset">Read another <span>↻</span></button></div>`;
   }
   return `<section class="own" id="own"><div class="own-head">
-      <span class="eyebrow">START HERE · YOUR OWN PAPER</span>
-      <h2>Before the story, try it on something of yours.</h2>
+      <span class="eyebrow">TRY A DOCUMENT · OPTIONAL</span>
+      <h2>Check a receipt of your own.</h2>
       <p>Try the receipt reader on your own image. Compare its transcription with the original before trusting the figures.</p>
     <ul class="own-list">
       <li><b>It transcribes, it does not decide.</b> Amazon Nova Pro reads the picture; code turns it into typed fields.</li>
@@ -366,11 +366,11 @@ function ackBox(r) {
 function donors(s) { const delivered=s.report?.status==='delivered'; return `<section class="donors" id="reports"><div class="section-line"><h2 class="section-title">Two reports. One effort.</h2></div>${[['donor_a','✳','Northstar Foundation','English · Financial & delivery brief'],['donor_b','◌','Community Giving Circle','العربية · ملخص التوزيع والإنفاق']].map(([r,icon,name,desc])=>`<article class="donor-card"><div class="donor-mark ${r==='donor_b'?'blue':''}" aria-hidden="true">${icon}</div><div><h3>${name}</h3><p>${desc}</p>${delivered?`<button class="text-button" data-role="${r}">Open delivered report ↗</button>`:''}</div><span class="badge ${delivered?'':'neutral'}">${delivered?'✓ Delivered':'Draft'}</span></article>`).join('')}<p class="form-hint">Same approved evidence. Two languages. No invented impact claims.</p></section>`; }
 function trace(s) { return `<details class="trace" id="trace"><summary><span>Behind the brief · ${s.events.length} recent recorded steps</span><span>${s.project.engine==='bedrock'?'Strands + Amazon Bedrock':'Local test parser · No AI'}</span></summary><div class="trace-list">${s.events.map(e=>`<div class="trace-event"><time>${new Date(e.created*1000).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</time><div><span class="trace-kind">${esc(e.kind)}</span>${esc(e.title)}<p>${esc(e.detail.reason || e.detail.text || (e.kind==='complete'?JSON.stringify(e.detail):e.detail.hash?'Snapshot '+e.detail.hash.slice(0,18)+'…':e.detail.receipt||''))}</p></div></div>`).join('')}</div></details>`; }
 function coordinator(s) {
-  return statusStrip(s) + ownReceipt() + `<div class="bench">
+  return statusStrip(s) + `<div class="bench">
       <section class="panel" id="sources"><div class="panel-head"><h2>Evidence.</h2><span class="count">${s.evidence.length} sources</span></div>${sourceCards(s.evidence)}<p class="panel-foot">Every figure links back to the source that stated it. A reported delivery is not independent proof of impact.</p></section>
       ${liveTimeline(s)}
       <div class="bench-right">${nextStep(s)}${donors(s)}</div>
-    </div>` + statusBar(s);
+    </div>` + statusBar(s) + ownReceipt();
 }
 function contributor(s) {
  const finance=role==='finance', questions=s.questions.filter(q=>q.status==='open');

@@ -516,3 +516,6 @@ main{padding-bottom:26px}
   border-left-width:3px;border-radius:var(--radius-sm);background:var(--ember-dim);
   color:var(--ember-soft);font-size:14.5px;line-height:1.5;letter-spacing:-.006em}
 .amend-note[dir=rtl]{border-left-width:1px;border-right-width:3px;text-align:right}
+
+/* Explain the fictional demo before entering the real team workspace. */
+.demo-intro{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:22px 0;border-bottom:1px solid #38392f;margin-bottom:18px}.demo-intro .eyebrow{margin-bottom:7px}.demo-intro p{margin:0 0 6px;font-size:17px;line-height:1.5}.demo-intro small{color:#b8b5a6;line-height:1.5}.demo-intro a{color:#c6f36b;font-size:13px;max-width:240px;flex-shrink:0}.own{margin-top:42px}body.story-active .demo-intro{display:none}@media(max-width:760px){.demo-intro{display:block}.demo-intro a{display:block;margin-top:14px;max-width:none}.demo-intro p{font-size:15px}}

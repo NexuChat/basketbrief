@@ -8,4 +8,4 @@ Three posts, each genuinely different, each with the exact phrase **Agents for H
 | 2 | Agents for Humans: four AWS pieces, and why each one is there |
 | 3 | Agents for Humans: the test that found our own defect |
 
-Every fact in them was measured on this project and is reproducible from this repository.
+Status: prepared drafts. No public post URLs have been verified. Publication and inclusion in the contest submission are still required for bonus eligibility. Claims must remain consistent with `docs/EVALUATION.md`; no pilot or time-saving claim is made.

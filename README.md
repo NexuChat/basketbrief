@@ -10,18 +10,6 @@ Then a field correction arrives. The agent follows up on the discrepancy, incorp
 
 [Live demonstration](https://basketbrief.mlki.app) · [Watch the film](https://basketbrief.mlki.app/static/film.html) · [Your team workspace](https://basketbrief.mlki.app/team) · [Agents for Humans](https://agentsforhumans.devpost.com/) · Good Neighbor Agents · MIT
 
-## Work with your own team
-
-At `/team`, each person signs in with their own account and joins a project through a one-use invitation. Contributors see their own expenses, finance sees project evidence, and coordinators approve reports. Donors receive approved snapshots only. Persistent in-app notifications connect uploads, questions, replies and approvals across separate browsers.
-
-The team agent follows new evidence through receipt clarification and draft preparation. A requested receipt attaches to the existing expense, avoiding a second charge. Multiple purchases retain their original currencies; a combined reporting total requires reviewed exchange rates with dates and sources. A later correction creates an amendment, preserving the previously approved snapshot.
-
-Upload PNG/JPEG receipts, PDFs, or selected attachments from an `.eml` file. A connected personal Gmail mailbox can supply selected attachments through a dedicated Google app password; this path was tested read-only with the owner's permission. Credentials are encrypted and are never shared with project members. The original PDF remains available; multi-page PDFs require full human review because only the first page is machine-read.
-
-Google and Microsoft OAuth handlers are implemented, but their public client registrations and live consent flows are not yet configured. Optional SMTP notifications also require an application sender; in-app notifications work independently. See [team permissions, setup and remaining limits](docs/TEAM-WORKSPACE.md). No personal mailbox or imported private document is included in the demonstration or repository.
-
-![Recipient-specific notifications from the synthetic separate-account staging test](docs/team-workspace.png)
-
 ## Try the complete loop
 
 Press **Play the whole story** for a guided simulation using the live Strands agent. Fictional replies and approvals are supplied by the demo controller; model calls, database operations, and inbox deliveries execute live. You can also switch roles and perform each step yourself.
@@ -42,7 +30,19 @@ The model interprets source messages and chooses how to ask for missing informat
 
 The guided demo uses one Strands `Agent` with seven tools and a sequential executor on Amazon Bedrock Nova Pro. The signed-in team workspace uses a project-scoped Strands agent with three tools to read pending evidence, link saved checked amounts, and ask the actual contributor for clarification. Neither agent can approve its own report. Report bodies are deterministic templates over stored facts. The receipt reader runs on **AgentCore Runtime**, with an in-process fallback. **AgentCore Memory** provides an advisory vendor history for the configured demo team.
 
-[Architecture](docs/architecture.png) · [Verification and limits](docs/EVALUATION.md)
+[Architecture](docs/architecture.png) · [Judge walkthrough](docs/JUDGE-GUIDE.md) · [Verification and limits](docs/EVALUATION.md)
+
+## Work with your own team
+
+At `/team`, each person signs in with their own account and joins a project through a one-use invitation. Contributors see their own expenses, finance sees project evidence, and coordinators approve reports. Donors receive approved snapshots only. Persistent in-app notifications connect uploads, questions, replies and approvals across separate browsers.
+
+The team agent follows new evidence through receipt clarification and draft preparation. A requested receipt attaches to the existing expense, avoiding a second charge. Multiple purchases retain their original currencies; a combined reporting total requires reviewed exchange rates with dates and sources. A later correction creates an amendment, preserving the previously approved snapshot.
+
+Upload PNG/JPEG receipts, PDFs, or selected attachments from an `.eml` file. A connected personal Gmail mailbox can supply selected attachments through a dedicated Google app password; this path was tested read-only with the owner's permission. Credentials are encrypted and are never shared with project members. The original PDF remains available; multi-page PDFs require full human review because only the first page is machine-read.
+
+Google and Microsoft OAuth handlers are implemented, but their public client registrations and live consent flows are not yet configured. Optional SMTP notifications also require an application sender; in-app notifications work independently. See [team permissions, setup and remaining limits](docs/TEAM-WORKSPACE.md). No personal mailbox or imported private document is included in the demonstration or repository.
+
+![Recipient-specific notifications from the synthetic separate-account staging test](docs/team-workspace.png)
 
 ## Run locally
 

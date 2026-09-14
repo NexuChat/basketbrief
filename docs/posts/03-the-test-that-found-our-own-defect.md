@@ -39,7 +39,7 @@ It failed on its first run, against a sentence that had been sitting in the fixt
 
 ## The fix
 
-Looking for a word is not the same as reading a claim. The guard now requires the number and the household word to appear in one window with **no negation in it**:
+Looking for a word is not the same as reading a claim. An intermediate fix required the number and household word to appear in one window with **no negation in it**:
 
 ```python
 for match in HOUSEHOLD_WORD.finditer(text):
@@ -51,7 +51,7 @@ for match in HOUSEHOLD_WORD.finditer(text):
 return False
 ```
 
-And both directions are now pinned: a source that genuinely says *"We reached 37 unique households today"* is accepted; a source that says *"We delivered 37 kits. We have not counted households"* is not.
+The current reader goes further with typed field association and ambiguity checks in `grounding.py`. The snippet above describes the intermediate lesson, not the complete current implementation. Both directions are pinned by regression tests: a source that genuinely says *"We reached 37 unique households today"* is accepted; a source that says *"We delivered 37 kits. We have not counted households"* is not.
 
 ## The other boundary cases
 

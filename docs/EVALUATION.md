@@ -4,6 +4,12 @@ This document separates deterministic tests, live model runs, provider liveness,
 
 Measured on 2026-09-14. The post-review build was exercised against Amazon Bedrock with the same application identity and service configuration used by the public demo.
 
+## Final presentation recording
+
+The 2026-09-14 replacement film records an isolated fictional workspace through actual browser actions against the public service. It opens the contributor's question, uploads the synthetic receipt, inspects the original, approves the first report, submits a late correction, observes HTTP 409 when reusing the first approval, resolves returned=12, and checks both donor inboxes. Both donor roles retained two report snapshots; the final counts were 88 delivered and 12 returned. There were no browser page errors in this recorded journey. Waiting intervals are edited; the film is not a latency benchmark.
+
+The separate team screenshots belong to the synthetic staging test described below. Private Gmail documents are not included. A field pilot and human-time measurements remain unperformed; the prepared protocol is in `docs/PILOT-PROTOCOL.md`.
+
 ## Signed-in team and mailbox checks
 
 The final team extension passed a full 121-test run (one upstream deprecation warning). The earlier coverage percentages below belong to the 105-test document-reader build, not this larger extension.
@@ -169,9 +175,9 @@ These sources concern grant reporting in the United States philanthropic sector.
 
 - No real organization, field pilot, donor endorsement, or independent delivery verification.
 - No measured human baseline, time saving, cost saving, or aid outcome.
-- One supplies transaction and one transport transaction per distribution; this is not a general ledger.
+- The guided demonstration supports one supplies transaction and one transport transaction in USD. The signed-in team workspace supports multiple expenses, original currency totals and reviewed conversions. Neither is a general ledger.
 - In-app donor inbox delivery, not external email, a read receipt, or proof of real-world receipt.
-- Demonstration role switching for fictional participants, not a production identity and onboarding system.
+- The guided demonstration lets visitors switch fictional roles. The separate `/team` workspace has individual accounts, invitations and project roles; it has not received an independent security audit.
 - No claim that guard tests establish resistance to every prompt injection.
 - No claim that three successful runs predict uninterrupted availability through the judging period.
 

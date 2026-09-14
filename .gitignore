@@ -21,3 +21,8 @@ basketbrief/static/BasketBrief-demo.mp4
 # video build scratch: raw footage, cut clips, audit frames
 video/
 video2/
+
+# Film production outputs and private research stay outside source control.
+video3/
+
+basketbrief/static/BasketBrief-final-20260914.mp4

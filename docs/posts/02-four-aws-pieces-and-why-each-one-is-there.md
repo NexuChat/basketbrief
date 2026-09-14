@@ -4,7 +4,7 @@ BasketBrief finishes the weekly donor report for a neighbourhood mutual-aid grou
 
 ## 1. Strands Agents SDK — the part that decides
 
-One `Agent`, seven tools, `BedrockModel`, `temperature=0`, a `SequentialToolExecutor`, and a hook that caps tool calls and wall time so a confused turn cannot run away.
+In the guided demonstration, one `Agent`, seven tools, `BedrockModel`, `temperature=0`, a `SequentialToolExecutor`, and a hook that caps tool calls and wall time so a confused turn cannot run away.
 
 The division of labour is the whole design:
 
@@ -15,18 +15,13 @@ Before the later document-reader and team-workspace updates, three consecutive b
 
 ## 2. Amazon Nova Pro — the part that reads a photograph
 
-Volunteers do not type receipts. They photograph them. So before any review starts, every attached image is transcribed by Nova Pro, and **the transcription becomes the source text**. The app validates that transcription and shows the original image for human comparison; it does not claim that OCR proves what the paper says.
+Volunteers often have photographs rather than typed expense records. Our first reader assumed every image was a purchase receipt. A private review with 13 document images showed why that was unsafe: statement credits and debits and utility meter tables do not belong in a purchase schema.
 
-I measured this before designing around it, and the measurement changed the design:
+The current shared reader classifies the document first. Statements and transfers return without an expense total. For supported documents, one call transcribes and another compares the proposed fields with the image; deterministic Decimal checks then assess the arithmetic. The original remains available for review. A bill or unpaid invoice does not establish payment.
 
-| Input | Result |
-|---|---|
-| Printed Latin-script receipt | vendor, invoice number, date, currency, both line items, total — all exact |
-| A receipt with a **planted** total mismatch (lines sum to 506,000; printed total 512,000) | mismatch caught; the printed total was **not** rewritten |
-| Arabic-only receipt | numbers exact, **wording hallucinated** — the vendor became an unrelated bank name |
-| Mixed-script receipt, asking only for the Latin text | exact |
+The final probe covered the 13 private images and the synthetic transport receipt. Six statements/transfer records were rejected without totals; five Arabic utility images required review; two Latin-script purchase documents retained printed totals but required review; the synthetic USD 60 receipt passed. These results establish conservative scope handling, not general OCR accuracy. A second model call can still share the first model's mistakes.
 
-That third row is why the prompt asks for Latin-script text and returns `null` rather than guessing. A limitation you have measured is a design input. A limitation you have assumed is a bug waiting for a demo.
+The prompt asks for legible text in its original language. Unclear values remain unknown. All private images and identifying extracted data stay outside this repository.
 
 ## 3. AgentCore Runtime — the part that is genuinely stateless
 
@@ -40,15 +35,15 @@ agentcore create --framework Strands --model-provider Bedrock --build CodeZip
 agentcore deploy --yes
 ```
 
-The CDK stack creates the execution role and the runtime. `invoke_agent_runtime` with a 100 KB receipt returns **HTTP 200 in 8.4 s** with every field correct, and the runtime emits structured logs and OpenTelemetry spans to CloudWatch without any extra work.
+The deployment provisions the execution role and runtime. The live final receipt probe returned schema version 2 through AgentCore Runtime. We report its observed result separately from historical latency measurements; a successful request does not establish availability throughout judging.
 
 The part I would argue for keeping: **the app falls back to reading in-process if the runtime does not answer**, and the timeline records which path was used — `read_on: agentcore-runtime` or `read_on: in-process`. A managed dependency should not be able to stop a coordinator finishing her evening.
 
 ## 4. AgentCore Memory — the part that outlives the workspace
 
-A workspace exists for one distribution and is then thrown away. A *team* is not: the same haulier and the same wholesaler come back every month.
+The guided demo creates a fresh workspace for a fictional distribution. Vendor history can be useful across distributions, even though it cannot validate a payment.
 
-That history sits in AgentCore Memory, keyed by the team. When a receipt names a vendor nobody on this team has ever bought from, the agent says so before it reaches a donor. When it names the haulier they always use, it says that too.
+For the configured fictional demo team, that history sits in AgentCore Memory. When a receipt names a vendor nobody on this team has ever bought from, the agent says so before it reaches a donor. When it names the haulier they always use, it says that too.
 
 Two things kept it honest:
 

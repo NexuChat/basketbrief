@@ -1,9 +1,26 @@
 {
-  "duration_seconds": 162.633333,
+  "filename": "BasketBrief-final-20260914.mp4",
+  "duration_seconds": 216.233333,
   "resolution": "1920x1080",
   "fps": 30,
   "official_max_seconds": 300,
-  "sha256": "90d757f5275dd87e466f98080c58a25869999d350c5379cb84ec51ba9aa0b092",
-  "source": "Fresh public live-agent recording with frame-aligned cuts; synthetic participants; team staging screenshots",
+  "bytes": 8937042,
+  "sha256": "1459fb7cf32d7245a0b9c564b0b990de3b317bffa92ff58492af9e7993956a87",
+  "source": "Fresh public live-agent recording, cropped actual UI captures, original story and architecture graphics, synthetic team staging screenshots",
+  "checks": {
+    "full_decode": "passed",
+    "encoded_scene_visual_review": "21 scene samples plus action-cut review; title crop corrected",
+    "stale_approval_http_status": 409,
+    "final_delivered": 88,
+    "final_returned": 12,
+    "donor_versions_each": 2,
+    "javascript_errors": 0,
+    "automated_tests_passed": 121,
+    "responsive_views_passed": 6,
+    "public_download_http_status": 200,
+    "download_sha256_matches": true,
+    "browser_playback": "passed; 1920x1080; 44 caption cues; no JavaScript errors"
+  },
+  "captions": "English VTT and SRT; phrase timing estimated",
   "published_to_youtube_or_vimeo": false
 }

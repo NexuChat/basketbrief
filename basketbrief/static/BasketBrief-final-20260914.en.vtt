@@ -1,0 +1,134 @@
+WEBVTT
+
+00:00:00.400 --> 00:00:04.312
+You have sent the report to both donors. Then a message arrives.
+
+00:00:06.933 --> 00:00:11.541
+Eighty-eight delivered. Not ninety-two. Who checks that correction? And who makes sure
+
+00:00:11.541 --> 00:00:13.461
+both donors hear about it?
+
+00:00:16.933 --> 00:00:21.642
+For a small relief team, the evidence lives with different volunteers. The
+
+00:00:21.642 --> 00:00:25.957
+coordinator ends up chasing the answers and keeping every report consistent.
+
+00:00:27.067 --> 00:00:31.473
+BasketBrief takes on that follow-up. Let me show you one complete week,
+
+00:00:31.473 --> 00:00:34.411
+with fictional people and a live Strands agent.
+
+00:00:36.067 --> 00:00:40.806
+The team reports twelve hundred and sixty dollars spent. Sixty dollars has
+
+00:00:40.806 --> 00:00:44.755
+no receipt. BasketBrief reads the sources and finds that gap.
+
+00:00:46.067 --> 00:00:49.940
+Here is Rana’s inbox. The agent has asked her for the transport
+
+00:00:49.940 --> 00:00:53.813
+receipt. Amal does not have to relay the question, and the same
+
+00:00:53.813 --> 00:00:55.427
+answer will support both reports.
+
+00:00:58.067 --> 00:01:02.760
+Rana uploads the photograph. Nova Pro reads it through AgentCore Runtime. The
+
+00:01:02.760 --> 00:01:07.453
+original and the transcription stay together so the coordinator can check what
+
+00:01:07.453 --> 00:01:08.627
+the machine read.
+
+00:01:10.067 --> 00:01:14.627
+The evidence is ready. Amal reviews the report and approves this version.
+
+00:01:14.627 --> 00:01:19.187
+The agent can prepare and follow up; approval stays with the coordinator.
+
+00:01:21.067 --> 00:01:25.908
+The first report is now in the donor’s inbox. It records ninety-two
+
+00:01:25.908 --> 00:01:29.539
+delivered and eight returned. That copy will stay intact.
+
+00:01:31.067 --> 00:01:33.419
+Now we return to that late correction.
+
+00:01:35.067 --> 00:01:40.438
+Sami reports eighty-eight delivered. Four kits no longer reconcile. BasketBrief stops the
+
+00:01:40.438 --> 00:01:45.363
+earlier approval from authorizing this changed report, and opens a follow-up.
+
+00:01:47.067 --> 00:01:51.306
+This is the question in Sami’s inbox. The system keeps households unknown.
+
+00:01:51.306 --> 00:01:55.545
+A difference in kit counts cannot tell us how many people received
+
+00:01:55.545 --> 00:01:55.899
+help.
+
+00:01:58.067 --> 00:02:03.351
+Sami checks storage and confirms twelve returned. The answer closes the gap.
+
+00:02:03.351 --> 00:02:06.875
+BasketBrief prepares the amendment from the updated evidence.
+
+00:02:08.067 --> 00:02:13.164
+Amal sees both changes before approving: delivered falls to eighty-eight, returned rises
+
+00:02:13.164 --> 00:02:16.563
+to twelve. The amendment needs its own approval.
+
+00:02:18.067 --> 00:02:23.030
+Northstar receives the approved amendment. The exact changes are visible, and the
+
+00:02:23.030 --> 00:02:25.099
+original report is still there.
+
+00:02:27.067 --> 00:02:32.115
+The Arabic donor receives the same facts and amendment. One evidence trail,
+
+00:02:32.115 --> 00:02:34.219
+carried through to both recipients.
+
+00:02:35.333 --> 00:02:40.179
+For your own team, each person signs in separately. New evidence creates
+
+00:02:40.179 --> 00:02:44.621
+a notification for the responsible reviewer. Donors see approved reports only.
+
+00:02:46.333 --> 00:02:51.480
+A requested receipt attaches to the original expense, avoiding a second charge.
+
+00:02:51.480 --> 00:02:56.197
+Multiple currencies stay separate until a reviewer supplies an exchange rate.
+
+00:02:57.300 --> 00:03:03.852
+Strands and Nova interpret messages and choose tools. AgentCore Runtime reads images;
+
+00:03:03.852 --> 00:03:10.404
+Memory provides advisory vendor history. Code enforces arithmetic, permissions and versioned approval.
+
+00:03:11.633 --> 00:03:16.167
+We tested the complete live loop, separate team accounts, and a private
+
+00:03:16.167 --> 00:03:20.701
+Gmail attachment import. Our automated tests cover the boundaries. Field impact and
+
+00:03:20.701 --> 00:03:23.345
+time saved have not yet been measured.
+
+00:03:25.633 --> 00:03:31.060
+When the facts change, the follow-up should not depend on one person
+
+00:03:31.060 --> 00:03:34.225
+remembering everyone. BasketBrief. Every correction deserves follow-through.
+
