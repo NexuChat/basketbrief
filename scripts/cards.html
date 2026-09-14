@@ -52,6 +52,27 @@
   .facts span{display:block;margin-top:20px;font-size:23px;line-height:1.34;color:var(--muted)}
   .facts .acid{color:var(--acid)}
 
+
+  /* architecture, in the film's own register: readable at 1080p, no light card */
+  .arch{display:flex;flex-direction:column;gap:34px;margin-top:8px}
+  .flow{display:grid;grid-template-columns:repeat(5,1fr);gap:20px;align-items:stretch}
+  .node{border:1px solid rgba(244,238,221,.20);border-radius:14px;padding:26px 22px;
+    background:rgba(28,28,23,.55);display:flex;flex-direction:column;gap:12px;position:relative}
+  .node i{font-style:normal;font:600 15px var(--mono);letter-spacing:.16em;color:var(--muted-dim);
+    text-transform:uppercase}
+  .node b{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.12}
+  .node span{font-size:20px;color:var(--muted);line-height:1.35}
+  .node.aws{border-color:rgba(255,157,112,.46)}
+  .node.aws i{color:var(--ember-soft)}
+  .node:not(:last-child)::after{content:'→';position:absolute;right:-24px;top:50%;
+    transform:translateY(-50%);color:var(--muted-dim);font-size:26px}
+  .band{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .band div{border:1px solid rgba(244,238,221,.16);border-left-width:3px;border-radius:12px;
+    padding:22px 24px;font-size:22px;line-height:1.4;color:var(--muted)}
+  .band div b{color:var(--paper);font-weight:600}
+  .band .code{border-left-color:var(--acid)}
+  .band .mem{border-left-color:var(--ember)}
+
   /* end card */
   .end h1{font-size:150px}
   .links{margin-top:70px;display:flex;gap:64px;font:600 27px var(--mono);letter-spacing:-.01em}
@@ -94,6 +115,24 @@
     <div><b>53</b><span>tests — <b style="display:inline;font:inherit">28</b> of them adversarial</span></div>
     <div><b>3</b><span>prompt injections inside field evidence, all refused</span></div>
     <div><b class="acid">0</b><span>open security alerts · MIT licensed</span></div>
+  </div>
+</div>
+
+
+<div class="card" id="c-arch">
+  <div class="eyebrow">One cycle, end to end</div>
+  <div class="arch">
+    <div class="flow">
+      <div class="node"><i>Contributors</i><b>Messages, claims, photographs</b><span>Two people, three sources</span></div>
+      <div class="node aws"><i>AgentCore Runtime</i><b>Nova Pro reads the photograph</b><span>The transcription becomes the source text</span></div>
+      <div class="node aws"><i>Strands + Bedrock</i><b>The agent chooses the next tool</b><span>Seven tools, temperature 0</span></div>
+      <div class="node"><i>Guards in code</i><b>What is allowed to be recorded</b><span>Then a follow-up gate re-checks the model</span></div>
+      <div class="node"><i>One human decision</i><b>Approval bound to a content hash</b><span>Delivered to each donor's inbox</span></div>
+    </div>
+    <div class="band">
+      <div class="code"><b>The code decides what is allowed.</b> An amount must appear in its source; loaded, delivered, returned and households never collapse into one; contributor text is data, never a command.</div>
+      <div class="mem"><b>AgentCore Memory holds the vendor ledger.</b> A workspace lasts one distribution; a team does not. Advisory in its own words, and never able to fail a review.</div>
+    </div>
   </div>
 </div>
 
