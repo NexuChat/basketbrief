@@ -22,7 +22,7 @@ Press **Play the whole story** for a guided simulation using the live Strands ag
 6. Sami confirms **12 returned**. The discrepancy closes. Amal reviews the before/after comparison and approves the amendment.
 7. Both donors receive the new version with the exact changes. Their original version still says 92 delivered and 8 returned.
 
-The standalone receipt reader also accepts an image you choose. It demonstrates transcription and arithmetic checks, not validation of real-world spending.
+The standalone reader classifies your image before extracting figures. Account statements and transfers are rejected without an expense total. Receipts are transcribed, checked against the image in a second model call, and checked arithmetically in code. The original stays beside the result for human review. These checks can still be wrong; they do not validate real-world spending.
 
 ## Why an agent helps
 
@@ -69,6 +69,7 @@ We withdrew the earlier “41 human acts → 2” headline after independent rev
 
 - All teams, donors, receipts and distribution events in the demo are fictional. There is no field pilot, real donor endorsement, or measured hours/money saved.
 - One supplies transaction and one transport transaction are supported per distribution. A separate purchase is surfaced for review and cannot silently overwrite an existing expense. This is not a general accounting ledger.
+- Bank/card statements, transfers and transfer batches cannot support purchase expenses. An invoice or utility bill may show an amount due, but cannot establish payment. Image expenses require a USD purchase receipt that passed the reading checks; the amount is pinned to its saved typed reading.
 - Source checks recognize supported English/Arabic patterns and require a stated total/currency-associated expense and a number associated with the correct field. Unrecognized phrasing needs clarification. They do not guarantee arbitrary-language understanding or perfect OCR.
 - Latin-script receipt fixtures have been tested. Arabic-only wording was unreliable in earlier Nova Pro tests; unsupported text must remain unknown.
 - The original image remains available to the coordinator. Matching a model-generated transcription cannot establish that it matches the pixels.
@@ -78,7 +79,9 @@ We withdrew the earlier “41 human acts → 2” headline after independent rev
 
 ## Layout
 
-`agent.py` — Strands and follow-up loop · `store.py` — evidence, facts, approvals, amendments and delivery · `grounding.py` — constrained source interpretation · `vision.py` — receipt transcription · `vendors.py` — advisory Memory ledger · `web.py` — API and export · `static/` — interface · `tests/` — regressions · `docs/` — submission and evidence.
+`agent.py` — Strands and follow-up loop · `store.py` — evidence, facts, approvals, amendments and delivery · `grounding.py` — constrained source interpretation · `documents.py` — document scope and transcription checks · `vision.py` — reader transport · `vendors.py` — advisory Memory ledger · `web.py` — API and export · `static/` — interface · `tests/` — regressions · `docs/` — submission and evidence.
+
+After changing `documents.py`, run `python scripts/sync_document_reader.py` to copy the same reader into the AgentCore package. A regression test prevents the two implementations from drifting.
 
 ## Disclosure
 

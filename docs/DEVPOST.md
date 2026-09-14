@@ -66,7 +66,7 @@ The extended story initially failed when a terse response such as `Returned kits
 
 ## Evidence
 
-- **76 tests pass**, including 30 adversarial guard cases and new review regressions.
+- **105 tests pass**, including 30 adversarial guard cases and document-scope review regressions.
 - Three consecutive full staging journeys after the final reliability fix completed in **66.0 s, 64.6 s, and 63.0 s** with 88 delivered, 12 returned, zero unresolved questions, four donor snapshots, and no browser errors.
 - Every run preserved the first donor snapshots, rejected the stale approval, and delivered the approved amendment to both donors.
 - `scripts/baseline.py` executes the full local-parser workflow and reports persisted interactions: two contributor questions, two contributor replies, two coordinator approvals, and four donor deliveries. It makes no claim about human time or productivity.

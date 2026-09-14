@@ -4,6 +4,7 @@ __pycache__/
 *.db
 data/*.db
 .pytest_cache/
+.coverage
 video/raw/
 video/main.mp4
 video/end.mp4

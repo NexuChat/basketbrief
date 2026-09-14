@@ -6,7 +6,7 @@ Measured on 2026-09-14. The post-review build was exercised against Amazon Bedro
 
 ## 1. Complete live journey
 
-After the final reliability fix, three consecutive browser-driven staging journeys completed with no browser errors:
+Before the document-scope update described below, three consecutive browser-driven staging journeys completed with no browser errors. These timings measure that earlier reader version:
 
 | | run 1 | run 2 | run 3 |
 |---|---:|---:|---:|
@@ -38,7 +38,7 @@ These runs demonstrate the configured synthetic journey. They do not establish a
 
 ## 2. Automated checks
 
-`pytest --cov=basketbrief --cov-report=term-missing -q` completed with **76 passed** and one upstream deprecation warning.
+After the document-scope update, `python -m coverage run -m pytest -q` completed with **105 passed** and one upstream deprecation warning. `python -m coverage report` reports the coverage below.
 
 The suite includes:
 
@@ -66,7 +66,7 @@ The most relevant review regressions prove that:
 
 The three prompt-injection strings in `tests/test_adversarial.py` exercise storage and role boundaries. They show that merely storing hostile contributor text cannot approve a report, deliver a report, or create money. They do **not** run a model against those strings and are not reported as live model refusals.
 
-Overall line coverage in this run was 62 percent. The deterministic grounding module was 100 percent and the store was 83 percent; live Bedrock, AgentCore, demo rendering, and provider-failure branches remain partly outside unit coverage. Passing tests do not replace the live browser evidence above.
+Overall line coverage in this run was 70 percent. The new shared document reader was 97 percent and the store was 87 percent; live Bedrock, AgentCore, demo rendering, and provider-failure branches remain partly outside unit coverage. Passing tests do not replace live browser evidence.
 
 ## 3. The defect found in the extended story
 
@@ -95,6 +95,27 @@ They do not prove that:
 The original image stays available to the coordinator. A new vendor in AgentCore Memory is an advisory hint, not evidence of fraud.
 
 ## 5. Receipt reading and AgentCore
+
+### Document-scope update, 2026-09-14
+
+A private set of 13 user-provided document images exposed a serious assumption: the earlier prompt treated every image as a purchase receipt. Card credits and debits could be added together; a utility meter table could become invented purchase items. Matching those invented line amounts to an invented total did not detect the error.
+
+The deployed reader now classifies first. Statements and transfers return `unsupported` without amounts. Supported purchase documents get a transcription call and a separate image-comparison call, followed by typed Decimal and arithmetic checks. A repeated summary row cannot become another item. The application and AgentCore use the same source, checked by a synchronization regression.
+
+Expense storage requires a saved eligible USD purchase-receipt reading and the exact saved total. Replacing its source text cannot authorize a different amount. Rejected images remain visible as review issues and leave their contributor question unresolved. Bills and invoices are not treated as proof of payment. The standalone preview shows the original image, uncertainty warnings, and whether any expense amount is eligible. Provider failures return an explicit generic error.
+
+The final public HTTP probe used all 13 private cases plus the synthetic demo receipt. All 14 responses used schema version 2 through AgentCore Runtime:
+
+| Cases | Observed behavior |
+|---|---|
+| Six statements/transfer documents | Rejected with no total, no item sum and no expense amount |
+| Two Latin-script purchase documents | Printed totals read correctly; final public reads required review because date verification did not pass |
+| Five Arabic utility images | Required review; none could support an expense; no meter-reading sum produced |
+| Included synthetic transport receipt | USD 60.00, two items, eligible after the checks |
+
+This is a scope-and-refusal result, **not 13 accurate OCR reads**. One water-bill transcription still contained an incorrect proposed total; the image check failed and the result remained unconfirmed. The model also failed to establish totals on clearer Arabic bills. A second model call is not independent ground truth and can make correlated mistakes or reject a correct normalization. Human comparison remains necessary. The private images and identifying extracted data are not published in this repository.
+
+The complete guided journey also passed with the new reader in staging and on the public deployment: USD 1,260 supported, 88 delivered, 12 returned, unknown households, and four donor snapshots. The source-dialog bug found during this review was fixed and opening both text sources and an uploaded original was rechecked. The standalone result was checked at 390 px with both a rejected statement and the accepted synthetic receipt, without horizontal overflow.
 
 The included Latin-script receipt fixture has been read successfully through Amazon Bedrock AgentCore Runtime. The reader returns vendor, invoice, date, currency, line items, stated total, calculated total, and any mismatch. The timeline records whether the image was read in AgentCore Runtime or by the in-process Bedrock fallback.
 

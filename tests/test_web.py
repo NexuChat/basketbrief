@@ -74,3 +74,21 @@ def test_image_upload_validates_content_and_permission(client):
     assert client.post(base+'/upload',headers=headers(p,'donor_a'),files={'file':('a.png',b'bad','image/png')}).status_code==403
     assert client.post(base+'/upload',headers=headers(p,'finance'),files={'file':('a.png',b'bad','image/png')}).status_code==422
 
+def test_statement_reader_returns_rejection_without_recordable_numbers(client,monkeypatch):
+    from basketbrief.documents import validate_reading
+    from PIL import Image
+    import io
+    b=io.BytesIO();Image.new('RGB',(20,20)).save(b,format='PNG')
+    monkeypatch.setattr('basketbrief.vision.read_receipt',lambda _:validate_reading({'document_type':'bank_statement'}))
+    data=client.post('/api/read-receipt',files={'file':('statement.png',b.getvalue(),'image/png')}).json()
+    assert data['status']=='unsupported' and data['document_type']=='bank_statement'
+    assert data['recordable']==[] and data['stated_total'] is None
+
+def test_provider_failure_is_explicit_and_does_not_leak_details(client,monkeypatch):
+    from PIL import Image
+    import io
+    b=io.BytesIO();Image.new('RGB',(20,20)).save(b,format='PNG')
+    def fail(_):raise RuntimeError('private request detail')
+    monkeypatch.setattr('basketbrief.vision.read_receipt',fail)
+    r=client.post('/api/read-receipt',files={'file':('a.png',b.getvalue(),'image/png')})
+    assert r.status_code==503 and 'private request detail' not in r.text

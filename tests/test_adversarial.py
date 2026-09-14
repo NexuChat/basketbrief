@@ -216,6 +216,7 @@ def test_an_unreadable_image_becomes_an_explicit_failure_not_a_zero():
 
 def test_a_receipt_whose_lines_disagree_with_its_total_is_reported_not_corrected():
     reading = read_receipt(b"x", client=_FakeVision({
+        "document_type": "receipt", "complete": True, "items_complete": True,
         "vendor": "AL-NOOR", "currency": "USD", "stated_total": 512000,
         "items": [{"name": "a", "qty": 1, "unit_price": 248000, "line_total": 248000},
                   {"name": "b", "qty": 1, "unit_price": 258000, "line_total": 258000}]}))
@@ -228,9 +229,13 @@ class _FakeVision:
 
     def __init__(self, payload):
         self.payload = payload
+        self.calls = 0
 
     def converse(self, **_):
-        return {"output": {"message": {"content": [{"text": json.dumps(self.payload)}]}}}
+        self.calls += 1
+        value = ({'document_type': self.payload.get('document_type', 'other')} if self.calls == 1
+                 else self.payload if self.calls == 2 else {'matches': True, 'issues': []})
+        return {"output": {"message": {"content": [{"text": json.dumps(value)}]}}}
 
 
 # ── the vendor ledger (AgentCore Memory) ──────────────────────────────────

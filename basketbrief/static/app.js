@@ -138,13 +138,13 @@ async function playStory() {
    this. The first thing offered is their own piece of paper, read by the same
    deployed reader, with the same guards shown refusing what is not printed on it.
    Nothing is stored and it never enters a workspace. */
-let ownReading = null, ownBusy = false;
+let ownReading = null, ownBusy = false, ownPreview = null;
 
 function ownReceipt() {
   const r = ownReading;
   let body;
   if (ownBusy) {
-    body = `<div class="own-wait"><span class="spinner"></span> Reading your receipt on Amazon Bedrock…</div>`;
+    body = `<div class="own-wait"><span class="spinner"></span> Identifying the document and checking its transcription…</div>`;
   } else if (!r) {
     body = `<label class="own-drop" for="own-file">
         <input id="own-file" type="file" accept="image/png,image/jpeg">
@@ -153,31 +153,33 @@ function ownReceipt() {
         <span class="own-cta">Choose an image</span>
       </label>
       <p class="own-foot">It is read by the same agent this team uses, and thrown away immediately. Nothing is stored and nothing enters a workspace.</p>`;
-  } else if (!r.ok) {
-    body = `<div class="own-result"><p class="own-bad">${esc(r.error || 'That did not read as a receipt.')}</p>
-      <p class="own-foot">An unreadable image becomes an explicit failure here — never a zero, and never a guess.</p>
+  } else if (r.error || r.status === 'unsupported') {
+    body = `<div class="own-result"><p class="own-bad">${esc(r.error || r.reason || 'This document is outside the purchase receipt scope.')}</p>
+      <p class="own-foot">No expense amount was accepted. Account statements and transfers are not purchase receipts.</p>
       <button class="button secondary" data-action="own-reset">Try another <span>↻</span></button></div>`;
   } else {
+    const types = {receipt:'Purchase receipt',invoice:'Invoice · payment not established',utility_bill:'Utility bill · amount due'};
     const rows = [
+      ['Document', types[r.document_type] || 'Unconfirmed'],
       ['Vendor', r.vendor || '—'], ['Invoice', r.invoice_no || '—'],
-      ['Date', r.date || '—'], ['Printed total', r.stated_total ? `${r.stated_total} ${r.currency || ''}`.trim() : '—'],
-      ['Line items add to', r.summed_total ?? '—'],
+      ['Date', r.date || '—'], ['Transcribed total', r.stated_total != null ? `${r.stated_total} ${r.currency || '(currency not established)'}` : 'Not established'],
     ];
+    if (r.summed_total != null) rows.push(['Transcribed item sum', r.summed_total]);
     const verdict = r.mismatch
       ? `<p class="own-flag">${esc(r.mismatch)} <b>The printed total was not rewritten.</b></p>`
-      : (r.stated_total && r.summed_total
-          ? `<p class="own-ok">The line items add up to the printed total.</p>`
-          : `<p class="own-foot">No line items to check against a total on this one.</p>`);
-    const ledger = r.vendor_known === false
-      ? `<p class="own-flag">${esc(r.vendor_note || 'This vendor is not in the ledger.')}</p>`
-      : (r.vendor_known === true ? `<p class="own-ok">This team has bought from this vendor before.</p>` : '');
+      : (r.stated_total != null && r.summed_total != null
+          ? `<p class="own-foot">The transcribed amounts agree arithmetically. That does not prove the image was read correctly.</p>`
+          : '');
+    const warnings = (r.warnings || []).map(w => `<p class="own-flag">${esc(w)}</p>`).join('');
+    const eligible = r.eligible_for_expense === true;
     body = `<div class="own-result">
+      <p class="${r.status === 'needs_review' ? 'own-flag' : 'own-foot'}">${r.status === 'needs_review' ? 'Unconfirmed transcription — review the original.' : 'Machine transcription — compare every figure with the original.'}</p>
       <dl class="own-facts">${rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(String(v))}</dd></div>`).join('')}</dl>
-      ${verdict}${ledger}
-      <div class="own-guard"><span>Only these numbers could be recorded from your paper</span>
-        <div>${(r.recordable || []).map(n => `<code>${esc(n)}</code>`).join('')}</div>
-        <small>Anything else — a total someone remembers, a figure from another receipt — is refused by the tool, not by the prompt.</small></div>
-      <p class="own-foot">Read in ${r.seconds}s on ${r.read_on === 'agentcore-runtime' ? 'Amazon Bedrock AgentCore Runtime' : 'this process'} · ${esc(r.model || '')}</p>
+      ${verdict}${warnings}
+      <div class="own-guard"><span>${eligible ? 'Proposed receipt amount · still requires coordinator review' : 'No expense amount accepted'}</span>
+        <div>${eligible ? (r.recordable || []).map(n => `<code>${esc(n)} ${esc(r.currency || '')}</code>`).join('') : ''}</div>
+        <small>${eligible ? 'The image checks passed, but they can still be wrong. This preview records nothing.' : 'Bills show an amount due, not proof of payment. Unsupported or uncertain documents cannot support a workspace expense.'}</small></div>
+      <p class="own-foot">Read in ${esc(String(r.seconds ?? '—'))}s · original review required</p>
       <button class="button secondary" data-action="own-reset">Read another <span>↻</span></button></div>`;
   }
   return `<section class="own" id="own"><div class="own-head">
@@ -186,13 +188,16 @@ function ownReceipt() {
       <p>Try the receipt reader on your own image. Compare its transcription with the original before trusting the figures.</p>
     <ul class="own-list">
       <li><b>It transcribes, it does not decide.</b> Amazon Nova Pro reads the picture; code turns it into typed fields.</li>
-      <li><b>It adds your line items up</b> against the printed total, and if they disagree it says so — without rewriting your receipt.</li>
-      <li><b>It shows you its own limits:</b> the numbers it transcribed. Reading an image can be wrong; a human still reviews the source.</li>
+      <li><b>It checks the document type first.</b> Account statements and transfers cannot become purchase expenses.</li>
+      <li><b>It checks the transcription against the image.</b> Arithmetic is a separate check; either can still miss an error. A human reviews the source.</li>
     </ul>
-    </div><div class="own-body">${body}</div></section>`;
+    </div><div class="own-body">${ownPreview ? `<figure class="own-original"><a href="${esc(ownPreview)}" target="_blank" rel="noopener"><img src="${esc(ownPreview)}" alt="Open your original document at full size"></a><figcaption>Your original · open the image to inspect it at full size</figcaption></figure>` : ''}${body}</div></section>`;
 }
 
 async function readOwn(file) {
+  if (!storyRunning) $('#story-caption').classList.remove('show');
+  if (ownPreview) URL.revokeObjectURL(ownPreview);
+  ownPreview = URL.createObjectURL(file);
   ownBusy = true; ownReading = null; render(state);
   try {
     const body = new FormData(); body.append('file', file);
@@ -416,7 +421,13 @@ async function start(fresh=false) {
  await switchRole('coordinator');
  }catch(e){$('#content').innerHTML='<div class="loading"><h1>The workspace could not open.</h1><p>'+esc(e.message)+'</p><button class="button" data-action="start">Try again</button></div>';}
 }
-async function showSource(id) {const e=state.evidence.find(e=>e.id===Number(id));if(!e)return;$('#source-content').innerHTML=`<h2>${esc(title(e))}</h2><p class="form-hint">${esc(names[e.actor])} · Source ${ordinal.get(e.id) ?? e.id} · ${esc(e.note||e.status)}</p><pre>${esc(e.text)}</pre>`;$('#source-dialog').showModal();if(e.attachment){try{const r=await api('/evidence/'+e.id+'/image',{raw:true});const url=URL.createObjectURL(await r.blob());const img=document.createElement('img');img.alt='Original uploaded receipt';img.src=url;img.onload=()=>URL.revokeObjectURL(url);$('#source-content').append(img);}catch(err){toast(err.message);}}}
+async function showSource(id) {
+ const index=state.evidence.findIndex(e=>e.id===Number(id));if(index<0)return;
+ const e=state.evidence[index];
+ $('#source-content').innerHTML=`<h2>${esc(title(e))}</h2><p class="form-hint">${esc(names[e.actor])} · Source ${index+1} · ${esc(e.note||e.status)}</p><pre>${esc(e.text)}</pre>`;
+ $('#source-dialog').showModal();
+ if(e.attachment){try{const r=await api('/evidence/'+e.id+'/image',{raw:true});const url=URL.createObjectURL(await r.blob());const img=document.createElement('img');img.alt='Original uploaded receipt';img.src=url;img.onload=()=>URL.revokeObjectURL(url);$('#source-content').append(img);}catch(err){toast(err.message);}}
+}
 $('#role').addEventListener('change',e=>switchRole(e.target.value));
 document.addEventListener('change',e=>{if(e.target.id==='own-file'&&e.target.files[0]){readOwn(e.target.files[0]);return;}
  if(e.target.id==='receipt-image'){const n=document.getElementById('receipt-name');if(n)n.textContent=e.target.files[0]?e.target.files[0].name.slice(0,42):'No file chosen';}});
@@ -430,7 +441,7 @@ document.addEventListener('click', async e=>{
  if(b.dataset.source){await showSource(b.dataset.source);return;}
  if(b.dataset.sample){const samples={receipt:['receipt','TRUCK HIRE RECEIPT TR-204. Vehicle rental for the flood relief run. Total USD 60.00. Paid. Synthetic receipt.'],missing:['message','I cannot find the transport receipt. Keep the USD 60 expense reported but unsupported.'],correction:['correction','Correction: 88 kits were delivered, not 92.'],resolution:['correction','Storage recount complete. Returned kits: 12.']};const [kind,text]=samples[b.dataset.sample];$('#evidence-kind').value=kind;$('#evidence-text').value=text;$('#evidence-text').focus();return;}
  if(b.dataset.export){b.disabled=true;const response=await api('/reports/'+b.dataset.export,{raw:true});const url=URL.createObjectURL(await response.blob());const a=document.createElement('a');a.href=url;a.download='BasketBrief-report-'+b.dataset.export+(role==='donor_b'?'-ar':'')+'.html';a.click();setTimeout(()=>URL.revokeObjectURL(url),10000);return;}
- if(b.dataset.action==='own-reset'){ownReading=null;render(state);return;}
+ if(b.dataset.action==='own-reset'){ownReading=null;if(ownPreview)URL.revokeObjectURL(ownPreview);ownPreview=null;render(state);return;}
  if(b.dataset.action==='play-story'){playStory();return;}
  if(b.dataset.action==='stop-story'){storyAbort=true;return;}
  if(b.dataset.action==='try-your-own'){$('#story-caption').classList.remove('show');await switchRole('finance');return;}

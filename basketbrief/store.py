@@ -103,6 +103,8 @@ class Store:
               UNIQUE(project,fingerprint));
             CREATE TABLE IF NOT EXISTS facts(project TEXT, key TEXT, value TEXT, evidence_id INTEGER,
               PRIMARY KEY(project,key));
+            CREATE TABLE IF NOT EXISTS document_readings(evidence_id INTEGER PRIMARY KEY,
+              payload TEXT NOT NULL, FOREIGN KEY(evidence_id) REFERENCES evidence(id));
             CREATE TABLE IF NOT EXISTS questions(id INTEGER PRIMARY KEY, project TEXT, key TEXT,
               recipient TEXT, text TEXT, status TEXT DEFAULT 'open', created REAL,
               UNIQUE(project,key));
@@ -229,6 +231,12 @@ class Store:
         amount = money(amount)
         with self.db() as c:
             e = self.get_evidence(c, pid, eid, "finance")
+            if e['attachment']:
+                row = c.execute('SELECT payload FROM document_readings WHERE evidence_id=?', (eid,)).fetchone()
+                reading = json.loads(row['payload']) if row else {}
+                if (not reading.get('eligible_for_expense') or reading.get('document_type') != 'receipt'
+                        or reading.get('currency') != currency or money(reading.get('stated_total')) != amount):
+                    raise Conflict('This image has not passed the purchase-receipt checks. A statement, transfer, bill or uncertain reading cannot authorize an expense.')
             if currency != "USD" or re.search(r"\b(EUR|GBP|YER)\b", e["text"], re.I):
                 raise Conflict("Currency needs a finance decision. No exchange rate was assumed.")
             if expense_amounts(e["text"]) != {Decimal(amount)}:
@@ -326,8 +334,7 @@ class Store:
     def transcribe_attachment(self, pid, eid, uploads_dir, reader=None):
         """Read an attached receipt photograph and write the transcription back as the source text.
 
-        The picture becomes words in the evidence row, so every later guard — the amount
-        must appear in the source — applies to what the paper actually said.
+        Retain the typed reading separately so text changes cannot bypass the image gate.
         """
         from . import vision
         with self.db() as c:
@@ -344,7 +351,7 @@ class Store:
         # A vendor this team has never bought from is a review hint, carried in
         # AgentCore Memory because it outlives this workspace. Advisory only.
         ledger = {}
-        if reading.get("ok") and reading.get("vendor"):
+        if reading.get("eligible_for_expense") and reading.get("vendor"):
             from . import vendors
             ledger = vendors.check(reading["vendor"])
             if ledger.get("known") is False:
@@ -352,6 +359,8 @@ class Store:
             vendors.remember(reading["vendor"], reading.get("invoice_no"),
                              str(reading["stated_total"]) if reading.get("stated_total") is not None else None)
         with self.db() as c:
+            c.execute('INSERT OR REPLACE INTO document_readings(evidence_id,payload) VALUES(?,?)',
+                      (eid, json.dumps(reading, ensure_ascii=False, default=str)))
             c.execute("UPDATE evidence SET text=? WHERE id=?", (text, eid))
             self.event(c, pid, "vision", "Read the receipt photograph", {
                 "evidence_id": eid, "model": reading.get("model"),
@@ -359,11 +368,17 @@ class Store:
                 "currency": reading.get("currency"), "items": len(reading.get("items") or []),
                 "confidence": reading.get("confidence"),
                 "read_on": reading.get("where", "in-process"),
+                "document_type": reading.get('document_type'), "status": reading.get('status'),
+                "warnings": reading.get('warnings', []),
                 **({"mismatch": reading["mismatch"]} if reading.get("mismatch") else {}),
                 **({"vendor_new": True} if ledger.get("known") is False else {}),
                 **({"vendor_known": True} if ledger.get("known") is True else {})})
-            if reading.get("mismatch"):
-                c.execute("UPDATE evidence SET note=? WHERE id=?", (reading["mismatch"], eid))
+            if not reading.get('eligible_for_expense'):
+                reason = 'Image requires review: ' + str(reading.get('reason') or reading.get('document_type'))
+                c.execute("UPDATE evidence SET status='review',note=? WHERE id=?", (reason, eid))
+                if e['question_id']:
+                    c.execute("UPDATE questions SET status='unresolved' WHERE project=? AND id=?", (pid, e['question_id']))
+                self.event(c, pid, 'review', 'An uncertainty stays visible', {'evidence_id': eid, 'reason': reason})
         return {"transcribed": bool(reading.get("ok")), "text": text,
                 "mismatch": reading.get("mismatch"),
                 "currency": reading.get("currency"),

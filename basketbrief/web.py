@@ -19,7 +19,7 @@ from pydantic import BaseModel, Field
 from PIL import Image, UnidentifiedImageError
 
 from .agent import process_project
-from .store import numeric_values as store_numbers, Store, Conflict, Forbidden, ROLES
+from .store import Store, Conflict, Forbidden, ROLES
 
 STATIC = Path(__file__).parent / 'static'
 
@@ -163,14 +163,14 @@ def create_app(db_path=None, engine=None, background=True):
             return HTMLResponse(export_report(p,p['version'],p['hash'],p['language']))
 
     @app.post('/api/read-receipt')
-    async def read_any_receipt(request:Request,file:UploadFile=File(...)):
+    def read_any_receipt(request:Request,file:UploadFile=File(...)):
         """Read a receipt the visitor brought, and show what the guards do with it.
 
         Nothing is stored and nothing enters a workspace. This exists so the first
         thing a visitor sees is a guard refusing something on their own piece of
         paper, rather than a story about strangers.
         """
-        raw=await file.read(2_000_001)
+        raw=file.file.read(2_000_001)
         if len(raw)>2_000_000:return JSONResponse({'error':'Use an image smaller than 2 MB.'},status_code=422)
         try:
             picture=Image.open(io.BytesIO(raw))
@@ -183,11 +183,20 @@ def create_app(db_path=None, engine=None, background=True):
         buffer=io.BytesIO();picture.save(buffer,format='PNG')
         from . import vendors, vision
         started=time.monotonic()
-        reading=vision.read_receipt(buffer.getvalue())
-        ledger=vendors.check(reading.get('vendor') or '') if reading.get('ok') else {'known':None}
+        try:
+            reading=vision.read_receipt(buffer.getvalue())
+        except Exception:
+            return JSONResponse({'ok':False,'status':'needs_review',
+                                 'error':'The image reader is unavailable. No figures were accepted; please try again.'},status_code=503)
+        ledger=vendors.check(reading.get('vendor') or '') if reading.get('eligible_for_expense') else {'known':None}
         text=vision.as_source_text(reading)
-        numbers=sorted(str(n) for n in store_numbers(text))
+        numbers=[str(reading['stated_total'])] if reading.get('eligible_for_expense') else []
         return {'ok':bool(reading.get('ok')),
+                'schema_version':reading.get('schema_version'),
+                'document_type':reading.get('document_type'),'status':reading.get('status'),
+                'reason':reading.get('reason'),'warnings':reading.get('warnings',[]),
+                'verification':reading.get('verification',False),
+                'eligible_for_expense':reading.get('eligible_for_expense',False),
                 'seconds':round(time.monotonic()-started,1),
                 'read_on':reading.get('where','in-process'),
                 'model':reading.get('model'),

@@ -481,8 +481,11 @@ main{padding-bottom:26px}
 .own-cta{margin-top:6px;padding:9px 16px;border-radius:100px;border:1px solid var(--line-strong);
   background:var(--panel);color:var(--paper);font-size:12.5px}
 .own-wait{display:flex;align-items:center;gap:12px;font-size:14px;color:var(--muted);padding:24px 0}
-.own-foot{margin:14px 0 0;font-size:11.5px;line-height:1.6;color:var(--muted-dim)}
+.own-foot{margin:14px 0 0;font-size:12px;line-height:1.6;color:var(--muted)}
 .own-facts{margin:0;display:grid;gap:0}
+.own-original{margin:0 0 18px}
+.own-original img{display:block;width:100%;max-height:420px;object-fit:contain;background:#fff;border:1px solid var(--line)}
+.own-original figcaption{font-size:12px;color:var(--muted);margin-top:6px}
 .own-facts>div{display:flex;justify-content:space-between;gap:14px;align-items:baseline;
   padding:9px 0;border-bottom:1px solid var(--line)}
 .own-facts>div:last-child{border-bottom:0}
