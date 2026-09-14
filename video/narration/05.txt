@@ -1,1 +1,1 @@
-Both donors have it, each with their own delivery receipt, each able to open only what was sent to them. Notice what the report does not say: ninety-two baskets are field-reported delivered. The agent never claims to have verified that aid reached anyone.
+Now every reported dollar has a receipt behind it. This is the only decision the coordinator is asked to make, and her approval is bound to this exact version and its content hash. Both donors receive it, each with their own delivery receipt.

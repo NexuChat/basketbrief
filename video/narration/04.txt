@@ -1,1 +1,1 @@
-Back on the coordinator's screen: every reported dollar now has a receipt behind it, and version two is ready. This is the only decision she is asked to make. Her approval is bound to this exact version and its content hash.
+It asks Rana in finance directly, once, instead of routing it through the coordinator. Rana replies with a photograph of the receipt, and Amazon Nova Pro reads the picture before the review even starts: vendor, invoice number, two line items, sixty dollars.
