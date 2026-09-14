@@ -98,9 +98,48 @@ The reader runs on **Amazon Bedrock AgentCore Runtime**, deployed from `runtime/
 | The memory service unreachable | the review still completes | ✅ `known: None`, error recorded, no failure |
 | No memory configured | silent | ✅ silent |
 
-## 6. What we did **not** measure
+## 6. The work the agent removes, counted rather than guessed
 
-- **No human baseline.** We did not time a coordinator doing this by hand with a spreadsheet and a template, so this project makes **no claim of hours or money saved**. The agent's own numbers above are all we can stand behind.
+Reproduce with `python scripts/baseline.py`.
+
+We did not time a coordinator. Timing one person once is an anecdote, and timing
+enough people to mean anything was not available to us before the deadline. So we
+measured the thing that **is** measurable from the same evidence the agent
+consumes: the acts a person must perform.
+
+An act is one irreducible piece of human work — reading a source, transcribing a
+figure, composing a message, chasing an unanswered one, reconciling totals,
+cross-checking two reports against each other, or making a judgement.
+
+| | By hand | With the agent |
+|---|---|---|
+| Before the correction | 33 | 1 |
+| After the correction | 8 | 1 |
+| **Total acts required of a person** | **41** | **2** |
+
+Every number is derived at runtime from the real data — the number of sources,
+the number of distinct figures each states, the number of donors, the number of
+facts the correction invalidates. Only two constants are assumed, and the script
+prints them so you can disagree and rerun: **one** chase per unanswered question
+(one reminder, not the two or three that are usual) and **one** re-read per
+reconciliation. Both are deliberately generous to the manual way of working.
+
+The agent recorded 13 steps of its own to absorb those 39.
+
+**What this is and is not.** It is a count of steps. It is **not** a time saving,
+a cost saving, or a claim about outcomes for anyone receiving aid. A coordinator
+who is fast, or who skips the cross-check, does fewer acts than this; one who is
+interrupted does more. The count says how much of the work is mechanical, not how
+long the mechanical part takes.
+
+And two things the count cannot show at all: that the arithmetic gap is *stated*
+rather than absorbed, and that the approval bound to the superseded version is
+refused rather than silently reused. Those are the reasons the product exists,
+and neither is an efficiency.
+
+## 7. What we did **not** measure
+
+- **No timed human baseline.** Section 6 counts acts, not minutes. This project makes **no claim of hours or money saved**.
 - **No real organisation, no pilot, no donor.** Every person, receipt, figure and organisation in the demo is fictional and labelled as such inside the app.
 - **No claim about impact.** A kit counted as delivered is a *team-reported* delivery. It is not evidence that a household received anything, and the report says so to the donor.
 - **No general accuracy claim** for receipt reading beyond the fixtures listed above.

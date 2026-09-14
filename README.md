@@ -60,7 +60,14 @@ git clone https://github.com/NexuChat/basketbrief && cd basketbrief
 python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 .venv/bin/python -m basketbrief.demo    # the whole journey in one command, no AWS needed
 .venv/bin/python -m pytest -q           # 55 tests, 30 of them adversarial, no AWS needed
+.venv/bin/python scripts/baseline.py    # what the same week costs a person without the agent
 ```
+
+`python scripts/baseline.py` counts the acts a coordinator must perform to do this
+week by hand — **41**, against **2** decisions left with the agent. Every number is
+derived at runtime from the same evidence; the two assumptions it makes are printed
+so you can disagree and rerun. It counts steps, not minutes: this project makes no
+claim of hours or money saved. See [`docs/EVALUATION.md`](docs/EVALUATION.md) §6.
 
 `python -m basketbrief.demo` prints the run end to end: the three sources, the gap the
 agent finds, the question it sends to one person, the answer, the approval bound to a
