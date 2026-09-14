@@ -28,3 +28,9 @@ agentcore invoke --prompt-file payload.json --runtime receiptreader
 `payload.json` is `{"image_b64": "<base64 of a PNG or JPEG>"}`. The deployed ARN then goes into the web app's `BASKETBRIEF_RUNTIME_ARN`.
 
 The account id in `agentcore/aws-targets.json` is ours; change it to yours. Nothing here holds a credential — the CLI uses your ambient AWS session.
+
+## A note on the CDK lockfile
+
+`agentcore/cdk/package-lock.json` is not committed. `aws-cdk-lib` bundles its own copy of `brace-expansion`, and npm `overrides` cannot reach inside a bundled dependency, so any lockfile we ship carries an advisory we cannot patch from here. The lockfile is generated at deploy time by `agentcore deploy`, which resolves the current versions; `package.json` pins an override to `^5.0.9` for everything that is not bundled.
+
+This affects the infrastructure tooling that runs on a maintainer's machine at deploy time. It is not part of the deployed runtime or of the web application.

@@ -14,3 +14,4 @@ runtime/agentcore/.cli/
 runtime/**/node_modules/
 runtime/**/.venv/
 runtime/**/cdk.out/
+runtime/agentcore/cdk/package-lock.json
