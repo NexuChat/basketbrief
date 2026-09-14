@@ -3,7 +3,7 @@
 The final cut is **3:44** (223.733 seconds), 1920×1080, 30 fps, H.264/AAC.
 [Download the MP4](https://basketbrief.mlki.app/static/BasketBrief-polished-20260914.mp4) · [Watch with captions](https://basketbrief.mlki.app/static/film.html)
 
-The [official rules](https://agentsforhumans.devpost.com/rules) allow **five minutes**, including slides, screen recording and voiceover. A public YouTube or Vimeo video is required for the submission. Three minutes is not the maximum. The owner uploaded the replacement to [YouTube](https://www.youtube.com/watch?v=fgexXunqKa8). On 2026-09-14, the project video and Agents for Humans entry were both updated through Devpost; entry 1182239 returned Submitted. YouTube title and thumbnail were checked. Playback from the review machine remains blocked by YouTube’s bot sign-in gate, so Public visibility is awaiting owner confirmation.
+The [official rules](https://agentsforhumans.devpost.com/rules) allow **five minutes**, including slides, screen recording and voiceover. A public YouTube or Vimeo video is required for the submission. Three minutes is not the maximum. The owner uploaded the replacement to [YouTube](https://www.youtube.com/watch?v=fgexXunqKa8). On 2026-09-14, the project video and Agents for Humans entry were both updated through Devpost; entry 1182239 returned Submitted. YouTube title and thumbnail were checked. Playback from the review machine remains blocked by YouTube’s bot sign-in gate, so the owner confirmed the requested settings. The description correction was verified on the live YouTube page; direct playback from this machine remains unverified.
 
 ## Story and evidence
 
