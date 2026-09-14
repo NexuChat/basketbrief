@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import io
 import json
 import os
@@ -109,8 +110,21 @@ def create_app(db_path=None, engine=None, background=True):
     @app.get('/healthz')
     def health():return {'ok':True,'engine':engine,'name':'BasketBrief'}
 
+    def asset_version():
+        # One build stamp from the asset bytes: a returning visitor (or a judge who
+        # looked yesterday) never gets yesterday's stylesheet out of their cache.
+        h=hashlib.sha256()
+        for name in ('style.css','app.js','fonts.css'):
+            f=STATIC/name
+            if f.exists():h.update(f.read_bytes())
+        return h.hexdigest()[:10]
+
     @app.get('/')
-    def index():return FileResponse(STATIC/'index.html')
+    def index():
+        html=(STATIC/'index.html').read_text()
+        v=asset_version()
+        html=html.replace('/static/style.css','/static/style.css?v='+v).replace('/static/app.js','/static/app.js?v='+v)
+        return HTMLResponse(html,headers={'Cache-Control':'no-store, must-revalidate'})
 
     @app.post('/api/projects',status_code=201)
     def create():return store.create_project(engine)

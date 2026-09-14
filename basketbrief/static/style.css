@@ -175,3 +175,48 @@ select option{font-size:14px}
 /* panels in a two-column row should not stretch into empty space */
 .contributor-layout,.workspace-grid{align-items:start}
 .upload-label{position:relative}
+
+/* ── depth, precision, and a hero that carries information ────────────────
+   Three things a designer called out: the clipart basket, figures set in a
+   soft display serif, and a page with no depth at all. */
+
+/* Figures are data, not decoration: a humanist sans with tabular numerals. */
+.metric-value,.hero-panel dd,.count,.badge{font-family:'IBM Plex Sans','Basket Sans',Arial,sans-serif;
+  font-variant-numeric:tabular-nums lining-nums}
+.metric-value{font-weight:600;letter-spacing:-.025em}
+
+/* A warm ground instead of flat paint, and cards that sit on it. */
+body{background:
+  radial-gradient(1100px 520px at 72% -8%, #eef3e3 0%, rgba(238,243,227,0) 62%),
+  radial-gradient(760px 420px at 6% 4%, #f6f2e6 0%, rgba(246,242,230,0) 58%),
+  var(--paper);background-attachment:fixed}
+.metric,.panel{box-shadow:0 1px 2px rgba(25,62,51,.04),0 8px 22px -14px rgba(25,62,51,.16)}
+.metric{transition:box-shadow .2s,transform .2s}
+.metric.is-gap{box-shadow:0 1px 2px rgba(154,92,32,.08),0 10px 26px -14px rgba(154,92,32,.34)}
+
+/* The hero status panel. */
+.hero{display:flex;align-items:flex-start;justify-content:space-between}
+.hero-copy{flex:1 1 auto;min-width:0}
+.hero-panel{flex:0 0 auto;width:268px;background:var(--card);border:1px solid var(--line);
+  border-radius:14px;padding:20px 22px;box-shadow:0 1px 2px rgba(25,62,51,.04),0 10px 26px -16px rgba(25,62,51,.2)}
+.hero-panel-head{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+  padding-bottom:12px;border-bottom:1px solid var(--line)}
+.hero-panel dl{margin:0;display:grid;gap:2px}
+.hero-panel dl>div{display:flex;justify-content:space-between;gap:14px;align-items:baseline;
+  padding:11px 0;border-bottom:1px solid var(--line)}
+.hero-panel dl>div:last-child{border-bottom:0}
+.hero-panel dt{font-size:13px;color:var(--muted)}
+.hero-panel dd{margin:0;font-size:13.5px;font-weight:600;color:var(--ink);text-align:right}
+.hero-panel-foot{margin:12px 0 0;font-size:11.5px;color:var(--muted)}
+@media(max-width:980px){.hero{flex-direction:column;gap:26px}.hero-panel{width:100%}}
+
+/* The action panel should out-rank the reading panel. */
+.next-step{box-shadow:0 2px 4px rgba(25,62,51,.05),0 16px 34px -20px rgba(25,62,51,.28)}
+.panel:not(.next-step) h2{color:#31463a}
+.hero-panel-foot{border-top:1px solid var(--line);padding-top:12px;margin-top:14px;font-size:11px;letter-spacing:.02em}
+.hero{padding-bottom:6px}
+.hero-copy{padding-top:4px}
+.metrics{margin-top:28px}
+.side-note{margin-top:44px;padding:0 15px 26px}
+.small-star{font-size:34px}
+.side-note p{font-size:24px;margin:14px 0 10px}

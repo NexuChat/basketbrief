@@ -38,8 +38,24 @@ function storyline(s) {
   return {eyebrow:'SEPTEMBER DISTRIBUTION · FIELD REPORT', head:'Let’s get the<br><em>story together.</em>',
     body:'Your sources are saved. BasketBrief will read them, chase what is missing, and draft both donor reports.', tone:'working'};
 }
-function art() { return '<div class="hero-art" aria-hidden="true"><svg viewBox="0 0 100 100" fill="none"><path d="M20 45h60l-8 34H28L20 45Z" fill="#c9d8aa" stroke="#5b7650" stroke-width="1.6"/><path d="m31 44 19-29 19 29M16 45h68M42 55v13m16-13v13" stroke="#5b7650" stroke-width="2.4" stroke-linecap="round"/><path d="M67 18c1-8 10-12 16-9-1 8-8 12-16 9Z" fill="#9caf7c"/><path d="m68 18-6 8" stroke="#5b7650" stroke-width="1.5"/></svg><span class="art-star">✳</span><span class="art-note">Every basket counts.</span></div>'; }
-function hero(eyebrow, headline, description, withArt=true, tone='') { return `<section class="hero ${tone}" id="overview"><div><div class="eyebrow">${eyebrow}</div><h1>${headline}</h1><p>${description}</p></div>${withArt?art():''}</section>`; }
+function art(s) {
+  // The hero used to carry a clipart basket. It now carries the only thing worth
+  // putting next to the headline: where this report actually stands right now.
+  if (!s) return '';
+  const r = s.report, open = s.questions.filter(q => q.status === 'open').length;
+  const delivered = s.receipts.length;
+  const rows = [
+    ['Sources read', s.evidence.filter(e => e.status !== 'pending').length + ' of ' + s.evidence.length],
+    ['Open questions', open ? String(open) : 'none'],
+    ['Report', r ? 'version ' + r.version + ' · ' + (r.status === 'outdated' ? 'superseded' : r.status) : 'not drafted yet'],
+    ['Donor deliveries', delivered ? String(delivered) : 'none yet'],
+  ];
+  return `<aside class="hero-panel" aria-label="Where this report stands">
+    <div class="hero-panel-head">Where this stands</div>
+    <dl>${rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>
+    <p class="hero-panel-foot">Fictional team · synthetic evidence</p></aside>`;
+}
+function hero(eyebrow, headline, description, withArt=true, tone='') { return `<section class="hero ${tone}" id="overview"><div class="hero-copy"><div class="eyebrow">${eyebrow}</div><h1>${headline}</h1><p>${description}</p></div>${withArt?art(withArt===true?null:withArt):''}</section>`; }
 function metrics(s, busy) {
   const known = (v) => v === null || v === undefined ? null : v;
   const gap = Number(s.unsupported || 0), reported = Number(s.reported || 0);
@@ -90,7 +106,7 @@ function donors(s) { const delivered=s.report?.status==='delivered'; return `<se
 function trace(s) { return `<details class="trace" id="trace"><summary><span>Behind the brief · ${s.events.length} recent recorded steps</span><span>${s.project.engine==='bedrock'?'Strands + Amazon Bedrock':'Local test parser · No AI'}</span></summary><div class="trace-list">${s.events.map(e=>`<div class="trace-event"><time>${new Date(e.created*1000).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</time><div><span class="trace-kind">${esc(e.kind)}</span>${esc(e.title)}<p>${esc(e.detail.reason || e.detail.text || (e.kind==='complete'?JSON.stringify(e.detail):e.detail.hash?'Snapshot '+e.detail.hash.slice(0,18)+'…':e.detail.receipt||''))}</p></div></div>`).join('')}</div></details>`; }
 function coordinator(s) {
   const st = storyline(s);
-  return hero(st.eyebrow, st.head, st.body, true, st.tone) + metrics(s.summary, s.busy) + `<div class="workspace-grid"><section class="panel" id="sources"><div class="panel-head"><h2>The story, with sources.</h2><span class="count">${s.evidence.length} sources</span></div>${sourceCards(s.evidence)}<p class="panel-foot">Every figure links back to the source that stated it. A reported delivery is not independent proof of impact.</p></section>${nextStep(s)}</div>` + donors(s) + trace(s);
+  return hero(st.eyebrow, st.head, st.body, s, st.tone) + metrics(s.summary, s.busy) + `<div class="workspace-grid"><section class="panel" id="sources"><div class="panel-head"><h2>The story, with sources.</h2><span class="count">${s.evidence.length} sources</span></div>${sourceCards(s.evidence)}<p class="panel-foot">Every figure links back to the source that stated it. A reported delivery is not independent proof of impact.</p></section>${nextStep(s)}</div>` + donors(s) + trace(s);
 }
 function contributor(s) {
  const finance=role==='finance', questions=s.questions.filter(q=>q.status==='open');
