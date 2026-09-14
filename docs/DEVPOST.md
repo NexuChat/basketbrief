@@ -16,7 +16,7 @@ Amal coordinates a fictional neighbourhood flood-relief group. Rana has the rece
 
 Then Sami corrects 92 delivered kits to 88 after the first reports have already gone out. The existing figures now leave four kits unaccounted for. That arithmetic establishes a discrepancy; it does **not** establish how many households were affected. BasketBrief keeps that distinction visible and asks Sami to check the delivery and storage records. His follow-up confirms 12 returned kits, closing the discrepancy before the amendment is approved.
 
-The scenario and every participant are synthetic. The reporting burden is real. The Center for Effective Philanthropy reported a 2023 study in which nonprofits reduced time spent on one funder's reporting requirements from eight hours to six. Stanford Social Innovation Review described a grantee spending 31 percent of a grant's value on administration while the funder allowed 13 percent. These sources establish a reporting burden; neither source tested or endorsed BasketBrief, and we derive no product savings from them.
+The scenario and every participant are synthetic. The reporting burden is real. The [Center for Effective Philanthropy](https://cep.org/blog/reimagining-reporting-part-1-insights-from-the-field/) reported a 2023 study in which nonprofits reduced time spent on one funder's reporting requirements from eight hours to six. [Stanford Social Innovation Review](https://ssir.org/articles/entry/the_nonprofit_starvation_cycle/) described a grantee spending 31 percent of a grant's value on administration while the funder allowed 13 percent. These sources establish a reporting burden; neither source tested or endorsed BasketBrief, and we derive no product savings from them.
 
 ## What the working demo does
 

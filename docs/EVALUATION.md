@@ -127,8 +127,8 @@ The earlier “41 human acts → 2” comparison was withdrawn because it counte
 
 Two external sources support the existence of reporting burden:
 
-- Center for Effective Philanthropy, Alice Mei and Nina Groleger, *Reimagining Reporting, Part 1: Insights From the Field*, 11 November 2025, reports a 2023 study in which nonprofits reduced time spent on one funder's reporting requirements from eight hours to six.
-- Stanford Social Innovation Review, Ann Goggins Gregory and Don Howard, *The Nonprofit Starvation Cycle*, Fall 2009, describes a grantee that calculated reporting administration at about 31 percent of a grant's value while the funder allowed 13 percent for indirect costs.
+- [Center for Effective Philanthropy](https://cep.org/blog/reimagining-reporting-part-1-insights-from-the-field/), Alice Mei and Nina Groleger, *Reimagining Reporting, Part 1: Insights From the Field*, 11 November 2025, reports a 2023 study in which nonprofits reduced time spent on one funder's reporting requirements from eight hours to six.
+- [Stanford Social Innovation Review](https://ssir.org/articles/entry/the_nonprofit_starvation_cycle/), Ann Goggins Gregory and Don Howard, *The Nonprofit Starvation Cycle*, Fall 2009, describes a grantee that calculated reporting administration at about 31 percent of a grant's value while the funder allowed 13 percent for indirect costs.
 
 These sources concern grant reporting in the United States philanthropic sector. They are not about neighbourhood flood relief, do not mention BasketBrief, and do not establish demand, usability, or impact for this product.
 
