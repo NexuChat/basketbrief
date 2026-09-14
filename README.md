@@ -8,6 +8,7 @@ Built for the [Agents for Humans Hackathon](https://agentsforhumans.devpost.com/
 
 - **Live demo:** https://basketbrief.mlki.app — no login, no setup, a fresh fictional workspace per visitor
 - **Engine:** [Strands Agents SDK](https://strandsagents.com) on **Amazon Bedrock** (`us.amazon.nova-pro-v1:0`), including reading receipt photographs
+- **Runtime:** the receipt reader is deployed on **Amazon Bedrock AgentCore Runtime** ([`runtime/`](runtime/)) — the app reads photographs there and falls back in-process if it is unreachable
 - **Memory:** **Amazon Bedrock AgentCore Memory** holds the team's vendor ledger — knowledge that outlives a workspace
 - **Architecture:** [`docs/architecture.png`](docs/architecture.png)
 

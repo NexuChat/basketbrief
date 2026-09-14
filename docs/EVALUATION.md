@@ -73,7 +73,19 @@ Measured on the project's own rendered receipts before any of this was designed 
 
 That third row is why the prompt asks for Latin-script text and returns `null` rather than guessing, and why the transcription — not the picture — becomes the source text that the amount guard checks. This is a measured limitation of one model on our fixtures, not a claim about OCR in general.
 
-## 4. The vendor ledger
+## 4. Where the photograph is actually read
+
+The reader runs on **Amazon Bedrock AgentCore Runtime**, deployed from `runtime/` with the AgentCore CLI and its CDK stack.
+
+| | Observed |
+|---|---|
+| `invoke_agent_runtime`, 100 KB receipt | HTTP **200 in 8.4 s** |
+| Fields returned | vendor, invoice number, date, currency, both line items, printed total — all exact |
+| The live app's record of it | every transcription logs `read_on: agentcore-runtime` |
+| Runtime unreachable | the app reads in-process and logs `read_on: in-process`; a review never fails on it |
+| Observability | the runtime emits structured logs **and OpenTelemetry spans** to CloudWatch — e.g. `trace_id=6aa757d05fcd5d3317b6c8af289df801 span_id=0d3ae696d2b26573`, `"Invocation completed successfully (0.051s)"` |
+
+## 5. The vendor ledger
 
 `tests/test_adversarial.py` cases 25–28, and one live check against the deployed memory:
 
@@ -86,7 +98,7 @@ That third row is why the prompt asks for Latin-script text and returns `null` r
 | The memory service unreachable | the review still completes | ✅ `known: None`, error recorded, no failure |
 | No memory configured | silent | ✅ silent |
 
-## 5. What we did **not** measure
+## 6. What we did **not** measure
 
 - **No human baseline.** We did not time a coordinator doing this by hand with a spreadsheet and a template, so this project makes **no claim of hours or money saved**. The agent's own numbers above are all we can stand behind.
 - **No real organisation, no pilot, no donor.** Every person, receipt, figure and organisation in the demo is fictional and labelled as such inside the app.
