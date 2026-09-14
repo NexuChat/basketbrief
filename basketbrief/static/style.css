@@ -420,7 +420,9 @@ dialog img{width:100%;margin-top:14px;border-radius:var(--radius-sm);border:1px 
   .figure-value{font-size:1.7rem}.status-bar{border-radius:var(--radius);padding:10px 12px}
   .status-bar>span{padding:4px 10px;border-right:0}
   .live-row{grid-template-columns:58px minmax(0,1fr);gap:8px}
-  .live-row .live-kind{grid-column:2}}
+  /* Both cells must be placed. Naming only the kind let the body auto-flow into
+     the 58px timestamp column, and every step read one word per line. */
+  .live-row .live-kind,.live-row .live-body{grid-column:2}}
 .bench .donors .section-title{font-size:clamp(1.2rem,1.6vw,1.5rem)}
 .live-list{padding-bottom:6px}
 .status-bar{margin-top:22px}
@@ -504,3 +506,10 @@ main{padding-bottom:26px}
   background:var(--ember)}
 .own-list b{color:var(--paper);font-weight:600}
 .own-head{display:flex;flex-direction:column;justify-content:center}
+
+/* A donor holds a snapshot that must not change under them. When a correction has
+   landed since, the existence of a newer version is stated — never its figures. */
+.amend-note{margin:0 0 1.4rem;padding:16px 20px;border:1px solid rgba(255,157,112,.34);
+  border-left-width:3px;border-radius:var(--radius-sm);background:var(--ember-dim);
+  color:var(--ember-soft);font-size:14.5px;line-height:1.5;letter-spacing:-.006em}
+.amend-note[dir=rtl]{border-left-width:1px;border-right-width:3px;text-align:right}

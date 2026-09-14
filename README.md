@@ -23,7 +23,7 @@ Open the live demo and press **Play the whole story**. One button runs the five 
 1. The agent reads three sources and the page settles on **“One thing is still missing.”** `$1,200` of the `$1,260` reported spending has a receipt behind it; `$60` does not. It has already asked Rana in Finance — **once**.
 2. Switch to **Rana · Supplies & receipts** (top-right). Answer the question by **uploading a photo of a receipt** — any receipt image works, or use the sample. Amazon Nova Pro transcribes it and the transcription becomes the source text, so only an amount actually printed on the paper can enter the ledger.
 3. Back as Amal: spending is now fully supported and **version 2** is ready. Approve it. Both donor inboxes receive it, each with its own delivery receipt. Open **Northstar Foundation** to read exactly what was sent.
-4. Switch to **Sami · Delivery team** and send a correction: *“Correction: we recounted at the warehouse. 88 kits were delivered, not 92.”*
+4. Switch to **Sami · Delivery team** and send a correction: *“Correction: we recounted at the church hall. 88 kits were delivered, not 92.”*
 5. Back as Amal: the figures move, **version 3** is drafted, and the gap is stated as what it means for people — *“4 kits unaccounted for: 100 loaded, 88 reported delivered, 8 returned. 4 households that registered at the shelter have no answer either way.”* The approval bound to version 2 is **refused** rather than silently reused.
 
 Everything above is the running agent; nothing is scripted or pre-recorded.

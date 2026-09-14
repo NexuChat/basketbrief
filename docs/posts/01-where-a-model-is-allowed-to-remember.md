@@ -12,7 +12,7 @@ My guard was simple and felt principled: **an amount may only be recorded if it 
 
 Then a correction arrived in the test data:
 
-> *"Correction: we recounted at the warehouse. 88 kits were delivered, not 92. Four more came back."*
+> *"Correction: we recounted at the church hall. 88 kits were delivered, not 92. Four more came back."*
 
 The agent tried to record `delivered=88, returned=12`. Twelve is not in the text — it is 8 plus 4 — so my guard refused the whole call. The agent tried `delivered=88` alone; now the counts didn't reconcile against the hundred loaded, so a second rule refused that too. Having nothing left it could do, the agent gave up and filed the correction as "needs clarification."
 

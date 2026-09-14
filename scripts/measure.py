@@ -51,7 +51,7 @@ def run_once(n):
     st = json.loads(api(pid, tok["coordinator"]))
     deliveries = len(st["receipts"])
     api(pid, tok["field"], "/evidence", "POST",
-        data={"text": "Correction: we recounted at the warehouse. 88 baskets were delivered, not 92.",
+        data={"text": "Correction: we recounted at the church hall. 88 kits were delivered, not 92.",
               "kind": "message"})
     st = idle(pid, tok["coordinator"])
     stale = api(pid, tok["coordinator"], "/approve", "POST",

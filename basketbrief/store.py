@@ -539,7 +539,18 @@ class Store:
                 e["detail"] = json.loads(e["detail"])
             jobs = [dict(r) for r in c.execute("SELECT id,status,error,created FROM jobs WHERE project=? ORDER BY id DESC LIMIT 5", (pid,))]
             receipts = [dict(r) for r in c.execute("SELECT recipient,delivery_key,created FROM inbox WHERE project=? AND kind='report' ORDER BY id DESC", (pid,))] if role == "coordinator" else []
+            # A donor reads a snapshot, and a snapshot must never change under them.
+            # But silence is its own dishonesty: if a correction has landed since the
+            # version they hold, they are entitled to know a newer one exists — without
+            # being shown figures no human has approved yet.
+            amendment = None
+            if donor:
+                latest = c.execute("SELECT version FROM reports WHERE project=? ORDER BY version DESC LIMIT 1", (pid,)).fetchone()
+                held = max((i["body"].get("version", 0) for i in inbox if i["kind"] == "report"), default=0)
+                if latest and held and latest["version"] > held:
+                    amendment = {"pending": latest["version"], "held": held}
             return {"project": dict(project), "role": role, "role_name": ROLES[role], "summary": self.summary_from(f) if role == "coordinator" else None,
+                    "amendment": amendment,
                     "facts": f if role == "coordinator" else {}, "evidence": evidence, "questions": questions, "report": report,
                     "inbox": inbox, "events": events, "jobs": jobs if role == "coordinator" else [], "receipts": receipts,
                     "busy": any(j["status"] in ("queued", "running") for j in jobs), "synthetic": True}

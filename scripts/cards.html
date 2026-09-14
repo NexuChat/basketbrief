@@ -1,0 +1,106 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>BasketBrief — film cards</title>
+<link rel="stylesheet" href="https://basketbrief.mlki.app/static/fonts.css">
+<style>
+  :root{
+    --ink:#11110f; --paper:#f1ecdf; --muted:#a9a394; --muted-dim:#7d786c;
+    --ember:#ff6b2c; --acid:#c6f36b;
+    --sans:'IBM Plex Sans',system-ui,sans-serif;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0}
+  body{background:var(--ink);color:var(--paper);font-family:var(--sans)}
+  .card{
+    width:1920px;height:1080px;position:relative;overflow:hidden;
+    padding:0 150px;display:flex;flex-direction:column;justify-content:center;
+    background:
+      radial-gradient(1100px 620px at 14% 6%, rgba(255,107,44,.09), transparent 62%),
+      radial-gradient(900px 600px at 92% 96%, rgba(198,243,107,.05), transparent 60%),
+      var(--ink);
+  }
+  /* the same faint rule grid the workspace carries, so the film and the app
+     are visibly one object rather than a deck about one */
+  .card::before{
+    content:'';position:absolute;inset:0;pointer-events:none;opacity:.5;
+    background-image:linear-gradient(rgba(244,238,221,.035) 1px,transparent 1px),
+                     linear-gradient(90deg,rgba(244,238,221,.035) 1px,transparent 1px);
+    background-size:120px 120px;
+  }
+  .eyebrow{
+    font:600 20px var(--mono);letter-spacing:.26em;color:var(--muted-dim);
+    text-transform:uppercase;display:flex;align-items:center;gap:26px;margin-bottom:46px}
+  .eyebrow::before{content:'';width:64px;height:2px;background:var(--ember);opacity:.85}
+  h1{
+    font-weight:800;font-size:118px;line-height:.93;letter-spacing:-.062em;
+    max-width:1560px}
+  h1 em{color:transparent;-webkit-text-stroke:1.6px rgba(241,236,223,.62);font-style:normal;display:block}
+  h1 em.warm{-webkit-text-stroke-color:rgba(255,157,112,.85)}
+  h1 em.good{-webkit-text-stroke-color:rgba(198,243,107,.75)}
+  h1.tight{font-size:92px;line-height:1.0}
+  p.sub{
+    margin-top:44px;font-size:31px;line-height:1.42;color:var(--muted);max-width:1240px;
+    letter-spacing:-.012em}
+  p.sub b{color:var(--paper);font-weight:600}
+
+  /* measured facts */
+  .facts{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:20px;
+    border-top:1px solid rgba(244,238,221,.16)}
+  .facts div{padding:52px 40px 0 0;border-right:1px solid rgba(244,238,221,.10)}
+  .facts div:last-child{border-right:0}
+  .facts b{display:block;font:600 96px var(--mono);letter-spacing:-.06em;line-height:1}
+  .facts span{display:block;margin-top:20px;font-size:23px;line-height:1.34;color:var(--muted)}
+  .facts .acid{color:var(--acid)}
+
+  /* end card */
+  .end h1{font-size:150px}
+  .links{margin-top:70px;display:flex;gap:64px;font:600 27px var(--mono);letter-spacing:-.01em}
+  .links .a{color:var(--ember)} .links .b{color:var(--acid)}
+  .fine{margin-top:46px;font:400 21px var(--mono);color:var(--muted-dim);letter-spacing:.02em}
+  .built{margin-top:38px;font-size:28px;color:var(--muted)}
+</style>
+
+<div class="card" id="c-problem">
+  <div class="eyebrow">The evening this takes</div>
+  <h1>Every week they have to prove<em class="warm">where the money went.</em></h1>
+</div>
+
+<div class="card" id="c-who">
+  <div class="eyebrow">Who it is for</div>
+  <h1 class="tight">Neighbourhood groups.<em>Food banks. Small nonprofits.</em></h1>
+  <p class="sub">The receipts are with one person. The delivery counts are with another. One receipt is always missing — so the coordinator spends the evening <b>being a switchboard instead of doing the work</b>.</p>
+</div>
+
+<div class="card" id="c-own">
+  <div class="eyebrow">Start with your own paper</div>
+  <h1>Bring a receipt<em class="good">from your own wallet.</em></h1>
+  <p class="sub">The same deployed agent. The same guards. Nothing is stored.</p>
+</div>
+
+<div class="card" id="c-play">
+  <div class="eyebrow">Now the group's own week</div>
+  <h1>One button.<em class="warm">The live agent.</em></h1>
+</div>
+
+<div class="card" id="c-line">
+  <div class="eyebrow">Where the line is drawn</div>
+  <h1 class="tight">The model decides what a source means.<em>The code decides what is allowed.</em></h1>
+</div>
+
+<div class="card" id="c-measured">
+  <div class="eyebrow">Measured, not claimed</div>
+  <div class="facts">
+    <div><b>7</b><span>identical end-to-end runs against the deployed app</span></div>
+    <div><b>53</b><span>tests — <b style="display:inline;font:inherit">28</b> of them adversarial</span></div>
+    <div><b>3</b><span>prompt injections inside field evidence, all refused</span></div>
+    <div><b class="acid">0</b><span>open security alerts · MIT licensed</span></div>
+  </div>
+</div>
+
+<div class="card end" id="c-end">
+  <div class="eyebrow">Agents for Humans · Good Neighbor Agents</div>
+  <h1>BasketBrief<em class="warm">chases the evidence.</em></h1>
+  <div class="built">Built with the Strands Agents SDK on Amazon Bedrock — Amazon Nova Pro, AgentCore Runtime, AgentCore Memory.</div>
+  <div class="links"><span class="a">basketbrief.mlki.app</span><span class="b">github.com/NexuChat/basketbrief</span></div>
+  <div class="fine">All organisations, people, receipts and figures in this demo are fictional.</div>
+</div>

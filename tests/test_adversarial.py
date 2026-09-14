@@ -121,7 +121,7 @@ def test_a_correction_that_stops_adding_up_is_still_recorded(project):
     eid = source_id(store, pid, "We loaded 100 kits")
     store.record_distribution(pid, eid, loaded=100, delivered=92, returned=8)
     later = store.submit(pid, "field",
-                         "Correction: we recounted at the warehouse. 88 kits were delivered, not 92.",
+                         "Correction: we recounted at the church hall. 88 kits were delivered, not 92.",
                          "message")["id"]
     result = store.record_distribution(pid, later, delivered=88)
     assert facts_of(store, pid)["delivered"]["value"] == 88
@@ -264,3 +264,38 @@ def test_the_ledger_is_silent_when_not_configured(monkeypatch):
     monkeypatch.setattr(vendors, "MEMORY_ID", "")
     assert vendors.check("anyone")["known"] is None
     assert vendors.remember("anyone", None, None) is False
+
+
+# ── a donor is told a newer version exists, without seeing its figures ────
+def test_a_donor_learns_a_correction_arrived_after_their_version(project):
+    """The snapshot they hold must not change. Their ignorance of it must."""
+    store, pid, _ = project
+    store.record_expense(pid, source_id(store, pid, "SUPPLIES RECEIPT"),
+                         "supplies", "1200.00", "USD", True)
+    store.record_expense(pid, source_id(store, pid, "Truck hire"),
+                         "transport", "60.00", "USD", False)
+    store.record_distribution(pid, source_id(store, pid, "We loaded 100 kits"),
+                              loaded=100, delivered=92, returned=8)
+    store.prepare(pid)
+    report = store.state(pid, "coordinator")["report"]
+    store.approve(pid, "coordinator", report["id"], report["hash"], acknowledge=True)
+    store.deliver(pid)
+
+    held = store.state(pid, "donor_a")
+    assert held["amendment"] is None, "nothing has changed yet"
+    delivered_version = held["inbox"][0]["body"]["version"]
+
+    later = store.submit(pid, "field",
+                         "Correction: we recounted at the church hall. 88 kits were delivered, not 92.",
+                         "message")["id"]
+    store.record_distribution(pid, later, delivered=88)
+    store.prepare(pid)
+
+    after = store.state(pid, "donor_a")
+    assert after["amendment"], "the donor is entitled to know a newer version exists"
+    assert after["amendment"]["held"] == delivered_version
+    assert after["amendment"]["pending"] > delivered_version
+    # the snapshot they hold is untouched
+    assert after["inbox"][0]["body"]["summary"]["delivered"] == 92
+    # and the unapproved figures are never handed to a donor
+    assert after["report"] is None and after["facts"] == {}
