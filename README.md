@@ -8,7 +8,7 @@ A volunteer relief coordinator owes two donors a report. Receipts sit with one p
 
 Then a field correction arrives. The agent follows up on the discrepancy, incorporates the answer, shows exactly what changed, and delivers a newly approved amendment. The original reports remain intact. A kit discrepancy never becomes an invented household impact claim.
 
-[Live demonstration](https://basketbrief.mlki.app) · [Your team workspace](https://basketbrief.mlki.app/team) · [Agents for Humans](https://agentsforhumans.devpost.com/) · Good Neighbor Agents · MIT
+[Live demonstration](https://basketbrief.mlki.app) · [Watch the film](https://basketbrief.mlki.app/static/film.html) · [Your team workspace](https://basketbrief.mlki.app/team) · [Agents for Humans](https://agentsforhumans.devpost.com/) · Good Neighbor Agents · MIT
 
 ## Work with your own team
 
@@ -19,6 +19,8 @@ The team agent follows new evidence through receipt clarification and draft prep
 Upload PNG/JPEG receipts, PDFs, or selected attachments from an `.eml` file. A connected personal Gmail mailbox can supply selected attachments through a dedicated Google app password; this path was tested read-only with the owner's permission. Credentials are encrypted and are never shared with project members. The original PDF remains available; multi-page PDFs require full human review because only the first page is machine-read.
 
 Google and Microsoft OAuth handlers are implemented, but their public client registrations and live consent flows are not yet configured. Optional SMTP notifications also require an application sender; in-app notifications work independently. See [team permissions, setup and remaining limits](docs/TEAM-WORKSPACE.md). No personal mailbox or imported private document is included in the demonstration or repository.
+
+![Recipient-specific notifications from the synthetic separate-account staging test](docs/team-workspace.png)
 
 ## Try the complete loop
 

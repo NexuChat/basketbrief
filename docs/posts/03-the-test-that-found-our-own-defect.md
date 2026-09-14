@@ -75,6 +75,6 @@ If you are shipping an agent this week, write the cases that are supposed to fai
 
 ---
 
-The suite is in **github.com/NexuChat/basketbrief** (MIT). The 76-test release suite includes 30 adversarial tests; the measured journey numbers and limits are written up in `docs/EVALUATION.md`. Live demo: **basketbrief.mlki.app**.
+The suite is in **github.com/NexuChat/basketbrief** (MIT). The current 121-test suite includes 30 adversarial boundary cases; the measured journey numbers and limits are written up in `docs/EVALUATION.md`. Live demo: **basketbrief.mlki.app**.
 
 Built for the Agents for Humans Hackathon, Good Neighbor Agents track.

@@ -19,16 +19,19 @@ CHROME = "/home/dev/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome"
 URL = "https://basketbrief.mlki.app"
 ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "video2" / "raw"
+STILLS = ROOT / "video2" / "mark-frames"
 ZOOM = "1.5"
 
 
 def main():
     RAW.mkdir(parents=True, exist_ok=True)
+    STILLS.mkdir(parents=True, exist_ok=True)
     marks = []
     t0 = None
 
     def mark(name):
         marks.append({"name": name, "t": round(time.time() - t0, 2)})
+        pg.screenshot(path=str(STILLS/f'{name}.png'))
         print(f"  {marks[-1]['t']:7.2f}  {name}")
 
     with sync_playwright() as p:
@@ -53,8 +56,8 @@ def main():
 
         # ── the settled workspace, top of page
         pg.evaluate("window.scrollTo({top:0})")
-        pg.wait_for_timeout(4000)
         mark("idle_top")
+        pg.wait_for_timeout(7000)
 
         # ── the visitor's own receipt
         pg.eval_on_selector("#own", "el => el.scrollIntoView({block:'center'})")

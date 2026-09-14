@@ -11,7 +11,7 @@ The division of labour is the whole design:
 - **The model decides** what a source means, what is missing, who to ask, and how to word a question.
 - **The code decides** what is allowed: a stated total or currency-associated amount must appear in its source; loaded, delivered, returned and unique households are four different facts and never collapse into one; contributor text is untrusted data, so an instruction inside a field message is evidence, not a command. Report bodies come from deterministic templates over the accepted facts.
 
-In the final release check, three consecutive browser-driven journeys through the full two-report amendment flow produced identical figures in 63–66 seconds each.
+Before the later document-reader and team-workspace updates, three consecutive browser-driven journeys through the full two-report amendment flow produced identical figures in 63–66 seconds each. These timings are specific to that earlier build; current checks and limitations are recorded in docs/EVALUATION.md.
 
 ## 2. Amazon Nova Pro — the part that reads a photograph
 

@@ -6,10 +6,12 @@ and every beat is either the product doing something real or a card in the
 product's own type. Detail shots are composed onto the film's ground rather than
 blown up to full frame, so nothing is ever soft.
 
-Nothing is re-enacted. Every product frame comes from one continuous recording
-of the deployed app driving the live agent; the cuts only choose where to look.
+The main story comes from a continuous recording of the deployed app driving the
+live agent. Team cutaways are actual screenshots from the separate-account staging
+journey. The fictional participants are automated for demonstration; product screens
+are not fabricated.
 """
-import json, subprocess, shutil
+import json, subprocess, shutil, hashlib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -30,20 +32,20 @@ def dur(p):
 
 recording = json.loads((V2 / "marks.json").read_text())
 FOOT = Path(recording["video"])
-MARK = {item["name"]: item["t"] for item in recording["marks"]}
+MARK = recording.get('video_marks') or {item["name"]: item["t"] for item in recording["marks"]}
 # Video capture begins before the recorder's clock. The pre-roll is exactly the
 # part of the file before the final recorder mark.
-OFFSET = max(0.0, dur(FOOT) - max(MARK.values()))
+OFFSET = 0 if recording.get('video_marks') else max(0.0, dur(FOOT) - max(MARK.values()))
 
 # ── the cut ──────────────────────────────────────────────────────────────
 # kind: "shot" takes footage at mark time t for d seconds; "card" holds a still.
 # crop (x,y,w,h) composes that region onto the ground at `zoom`, centred.
 # Each beat's length is the longer of its planned hold and its narration.
 BEATS = [
-    dict(k="shot", t=MARK["amendment_changes"], d=5.2, crop=(370, 220, 1500, 560), zoom=1.20, fade=True,
+    dict(k="card", img="c-payoff", d=5.2, fade=True,
          vo="The report was already with both donors. Then the count changed. BasketBrief followed through."),
     dict(k="card", img="c-problem", d=6.0,
-         vo="For a small aid group, the report is not the hard part. The handoffs are. A late correction can leave two donors holding numbers nobody has reconciled."),
+         vo="Small aid groups collect receipts and delivery counts from different volunteers. A late correction leaves the coordinator chasing answers and keeping both donor reports consistent."),
     dict(k="card", img="c-who", d=7.4,
          vo="BasketBrief is for Amal, a coordinator. Rana has the receipt. Sami has the counts. The agent carries one evidence trail across both donors."),
     dict(k="shot", t=MARK["idle_top"], d=4.4,
@@ -55,7 +57,7 @@ BEATS = [
     dict(k="shot", t=MARK["story_3"], d=6.4,
          vo="Rana answers with a photograph. Nova Pro reads it through AgentCore Runtime before the review starts."),
     dict(k="shot", t=MARK["story_4"], d=5.0, crop=(400, 252, 1480, 452), zoom=1.26,
-         vo="The transcription states sixty dollars. Every reported dollar now has receipt support."),
+         vo="The transcription states sixty dollars. The original stays visible for review. Receipt support is not proof of payment."),
     dict(k="shot", t=MARK["story_5"], d=5.4,
          vo="Amal approves one exact version, bound to its content hash. Both donors receive immutable inbox snapshots."),
     dict(k="shot", t=MARK["story_7"], d=5.2,
@@ -70,12 +72,16 @@ BEATS = [
          vo="Northstar keeps the original report and receives the amendment beside it."),
     dict(k="shot", t=MARK["donor_arabic"], d=5.4,
          vo="The Arabic donor receives the same approved evidence and exact changes."),
+    dict(k="still", img="team-notifications", d=6.4,
+         vo="Beyond the guided story, teammates sign in separately. New evidence and questions reach the people responsible."),
+    dict(k="still", img="team-source", d=6.4,
+         vo="A requested receipt completes the original expense, without counting it twice. Reviewers inspect the source. Donors receive only the approved snapshot."),
     dict(k="card", img="c-line", d=6.4,
          vo="The model decides what a source means. The code decides what is allowed."),
     dict(k="card", img="c-arch", d=8.6,
          vo="Strands and Nova choose tools. AgentCore Runtime reads images, Memory carries vendor history, and deterministic code owns facts, roles, follow-ups, and approval validity."),
     dict(k="card", img="c-measured", d=7.2,
-         vo="Seventy-six tests pass, including thirty adversarial boundary cases. Three full browser journeys produced identical final reports without browser errors."),
+         vo="One hundred twenty-one tests pass, including thirty adversarial boundary cases. Separate team accounts completed the handoff, and a private Gmail import passed its checks."),
     dict(k="card", img="c-end", d=6.6, fadeout=True,
          vo="Fictional participants. A live system. BasketBrief keeps the follow-up moving and every correction visible, so the people doing the work can stay with the work."),
 ]
@@ -86,7 +92,11 @@ def narrate():
     out.mkdir(parents=True, exist_ok=True)
     for i, b in enumerate(BEATS, 1):
         f = out / f"{i:02d}.mp3"
-        sh("edge-tts", "--voice", VOICE, "--rate", RATE, "--text", b["vo"], "--write-media", str(f))
+        key=hashlib.sha256((VOICE+RATE+b['vo']).encode()).hexdigest()
+        cache=f.with_suffix('.sha256')
+        if not (f.exists() and cache.exists() and cache.read_text()==key):
+            sh("edge-tts", "--voice", VOICE, "--rate", RATE, "--text", b["vo"], "--write-media", str(f))
+            cache.write_text(key)
         b["vo_len"] = dur(f)
         b["vo_file"] = f
         # 0.45s of air before the line, 0.7s after, or the planned hold — whichever is longer
@@ -169,7 +179,7 @@ def main():
     final = V2 / "BasketBrief-demo.mp4"
     sh("ffmpeg", "-y", "-loglevel", "error", "-i", str(silent), "-i", str(voice),
        "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
-       "-shortest", "-movflags", "+faststart", str(final))
+       "-af", "apad", "-shortest", "-movflags", "+faststart", str(final))
     print(f"\n{final}  {dur(final):.1f}s  {final.stat().st_size/1e6:.1f} MB")
 
 

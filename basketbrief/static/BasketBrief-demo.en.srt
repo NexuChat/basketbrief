@@ -1,0 +1,157 @@
+1
+00:00:00,450 --> 00:00:05,778
+The report was already with both donors. Then the
+count changed. BasketBrief followed through.
+
+2
+00:00:06,917 --> 00:00:12,343
+Small aid groups collect receipts and delivery
+counts from different volunteers. A late correction
+
+3
+00:00:12,343 --> 00:00:16,829
+leaves the coordinator chasing answers and keeping
+both donor reports consistent.
+
+4
+00:00:17,983 --> 00:00:24,662
+BasketBrief is for Amal, a coordinator. Rana has the
+receipt. Sami has the counts. The agent carries
+
+5
+00:00:24,662 --> 00:00:27,199
+one evidence trail across both donors.
+
+6
+00:00:28,350 --> 00:00:32,046
+BasketBrief is a Strands agent that owns the follow-
+up work.
+
+7
+00:00:33,217 --> 00:00:39,023
+It finds sixty dollars without a receipt and asks
+the person who can resolve it. One answer serves
+
+8
+00:00:39,023 --> 00:00:39,793
+both reports.
+
+9
+00:00:40,950 --> 00:00:46,575
+Rana answers with a photograph. Nova Pro reads it
+through AgentCore Runtime before the review
+
+10
+00:00:46,575 --> 00:00:46,998
+starts.
+
+11
+00:00:48,150 --> 00:00:54,128
+The transcription states sixty dollars. The original
+stays visible for review. Receipt support is
+
+12
+00:00:54,128 --> 00:00:55,422
+not proof of payment.
+
+13
+00:00:56,583 --> 00:01:03,076
+Amal approves one exact version, bound to its
+content hash. Both donors receive immutable inbox
+
+14
+00:01:03,076 --> 00:01:03,759
+snapshots.
+
+15
+00:01:04,917 --> 00:01:08,277
+Then the count changes. Eighty-eight, not ninety-
+two.
+
+16
+00:01:10,117 --> 00:01:16,409
+A hundred loaded. Eighty-eight delivered. Eight
+returned. Four unaccounted for, and the old approval
+
+17
+00:01:16,409 --> 00:01:17,101
+is refused.
+
+18
+00:01:18,250 --> 00:01:24,111
+That discrepancy says nothing about households.
+BasketBrief asks Sami to check storage instead of
+
+19
+00:01:24,111 --> 00:01:25,138
+inventing impact.
+
+20
+00:01:26,283 --> 00:01:32,163
+Sami confirms twelve returned. The figures
+reconcile, and both changes are shown before
+approval.
+
+21
+00:01:33,317 --> 00:01:37,541
+Northstar keeps the original report and receives the
+amendment beside it.
+
+22
+00:01:38,717 --> 00:01:43,085
+The Arabic donor receives the same approved evidence
+and exact changes.
+
+23
+00:01:44,250 --> 00:01:50,109
+Beyond the guided story, teammates sign in
+separately. New evidence and questions reach the
+people
+
+24
+00:01:50,109 --> 00:01:50,826
+responsible.
+
+25
+00:01:51,983 --> 00:01:58,143
+A requested receipt completes the original expense,
+without counting it twice. Reviewers inspect the
+
+26
+00:01:58,143 --> 00:02:01,223
+source. Donors receive only the approved snapshot.
+
+27
+00:02:02,383 --> 00:02:06,367
+The model decides what a source means. The code
+decides what is allowed.
+
+28
+00:02:08,783 --> 00:02:15,451
+Strands and Nova choose tools. AgentCore Runtime
+reads images, Memory carries vendor history, and
+
+29
+00:02:15,451 --> 00:02:20,399
+deterministic code owns facts, roles, follow-ups,
+and approval validity.
+
+30
+00:02:21,550 --> 00:02:27,025
+One hundred twenty-one tests pass, including thirty
+adversarial boundary cases. Separate team
+
+31
+00:02:27,025 --> 00:02:31,558
+accounts completed the handoff, and a private Gmail
+import passed its checks.
+
+32
+00:02:32,717 --> 00:02:38,397
+Fictional participants. A live system. BasketBrief
+keeps the follow-up moving and every correction
+
+33
+00:02:38,397 --> 00:02:41,933
+visible, so the people doing the work can stay with
+the work.
