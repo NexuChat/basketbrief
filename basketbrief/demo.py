@@ -118,7 +118,7 @@ def main():
         print(f"    And they are told v{donor['amendment']['pending']} is awaiting approval,"
               "\n    without being shown a figure no human has approved.")
 
-    print(f"\n  This scripted scenario used the real store and local parser; every figure came out after the"
+    print(f"\n  This scripted scenario used the real store and the {engine} engine; every figure came out after the"
           f"\n  agent ran. Workspace: {tmp}\n")
     return 0
 
