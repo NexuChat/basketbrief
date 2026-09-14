@@ -9,14 +9,14 @@ async function api(path = '', options = {}) { return apiAs(role, path, options);
 async function apiAs(who, path = '', options = {}) {
   const headers = {...(options.body instanceof FormData ? {} : {'Content-Type':'application/json'}), Authorization:'Bearer ' + workspace.tokens[who], ...options.headers};
   const response = await fetch('/api/projects/' + workspace.id + path, {...options, headers});
-  if (!response.ok) { const data = await response.json().catch(() => ({})); throw new Error(data.error || (response.status === 422 ? 'Please check the evidence and try again.' : 'The request could not be completed.')); }
+  if (!response.ok) { const data = await response.json().catch(() => ({})); const error = new Error(data.error || (response.status === 422 ? 'Please check the evidence and try again.' : 'The request could not be completed.')); error.status=response.status; throw error; }
   return options.raw ? response : response.json();
 }
 function title(e) { if(e.kind === 'correction') return 'A correction from the delivery team'; if(e.kind === 'receipt') return e.attachment ? 'Receipt image' : (/kit|supplies/i.test(e.text) ? 'Supplies receipt' : 'Truck hire receipt'); if(e.kind === 'expense_claim') return 'Truck hire, receipt missing'; return e.actor === 'field' ? 'Delivery update' : 'A reply from supplies'; }
 function sourceCards(evidence) {
   const ordinal = new Map(evidence.map((e, i) => [e.id, i + 1]));
   if (!evidence.length) return '<div class="empty-state"><p>Your evidence will appear here.</p></div>';
-  return '<div class="evidence-list">' + evidence.map(e => `<article class="evidence-card"><div class="source-icon ${e.kind==='expense_claim'?'warning':''}" aria-hidden="true">${e.actor==='field'?'≋':'▤'}</div><div class="source-body"><div class="source-header"><h3>${esc(title(e))}</h3><span class="badge ${e.status==='review'?'amber':e.status==='pending'?'neutral':''}">${e.status==='accepted'?'✓ Linked':e.status==='pending'?'Reviewing':'Needs review'}</span></div><p class="source-meta">${esc(names[e.actor])} · Source ${ordinal.get(e.id) ?? e.id} · ${esc(e.kind.replace('_',' '))}</p><p class="source-excerpt">${esc(e.text)}</p><button class="text-button" data-source="${e.id}">View original source ↗</button></div></article>`).join('') + '</div>';
+  return '<div class="evidence-list">' + evidence.map(e => `<article class="evidence-card"><div class="source-icon ${e.kind==='expense_claim'?'warning':''}" aria-hidden="true">${e.actor==='field'?'≋':'▤'}</div><div class="source-body"><div class="source-header"><h3>${esc(title(e))}</h3><span class="badge ${e.status==='review'?'amber':e.status==='pending'?'neutral':''}">${e.status==='accepted'?'✓ Linked':e.status==='pending'?'Reviewing':e.status==='superseded'?'Updated later':'Needs review'}</span></div><p class="source-meta">${esc(names[e.actor])} · Source ${ordinal.get(e.id) ?? e.id} · ${esc(e.kind.replace('_',' '))}</p><p class="source-excerpt">${esc(e.text)}</p><button class="text-button" data-source="${e.id}">View original source ↗</button></div></article>`).join('') + '</div>';
 }
 /* ── the guided run ───────────────────────────────────────────────────────
    Every step below calls the same API a person would, as the same role, against
@@ -46,7 +46,12 @@ async function untilIdle(limit = 150) {
     await pause(1400);
     const st = await apiAs('coordinator');
     state = st; render(st); previous = JSON.stringify(st);
-    if (!st.busy) return st;
+    if (!st.busy) {
+      const failed = st.jobs.find(j => j.status === 'failed');
+      if (failed) throw new Error(failed.error);
+      if (!st.report) throw new Error('The review did not produce a report.');
+      return st;
+    }
   }
   throw new Error('The review is taking longer than expected.');
 }
@@ -54,8 +59,9 @@ async function untilIdle(limit = 150) {
 async function playStory() {
   if (storyRunning) return;
   storyRunning = true; storyAbort = false;
-  const N = 8;
+  const N = 11;
   try {
+    if (state?.report?.status === 'delivered' || state?.evidence?.length > 3) await start(true);
     if (role !== 'coordinator') await switchRole('coordinator');
     caption('Three sources arrived from two different people. The agent is reading them now.', 1, N);
     let st = await untilIdle();
@@ -80,7 +86,7 @@ async function playStory() {
 
     const report = st.report;
     if (report && report.status !== 'delivered') {
-      caption('This is the only decision asked of the coordinator. Approval is bound to this exact version and its content hash.', 5, N);
+      caption('In this guided simulation, Amal reviews and approves this exact version. The approval is bound to its content hash.', 5, N);
       await pause(3200);
       await apiAs('coordinator', '/approve', {method: 'POST',
         body: JSON.stringify({report_id: report.id, hash: report.hash, acknowledge: true})});
@@ -100,13 +106,27 @@ async function playStory() {
       try {
         await apiAs('coordinator', '/approve', {method: 'POST',
           body: JSON.stringify({report_id: report.id, hash: report.hash, acknowledge: true})});
-      } catch (e) { refused = true; }
+      } catch (e) { if (e.status !== 409) throw e; refused = true; }
     }
     caption(refused
       ? 'Both reports were redrafted, the arithmetic gap is stated plainly — and the approval bound to the old version was refused. It cannot be reused for a version nobody read.'
       : 'Both reports were redrafted and the arithmetic gap is stated plainly.', 8, N);
-    await pause(6000);
-    captionDone('That was the live agent, not a recording. Now feed it something of your own.');
+    await pause(4500);
+    const fieldQuestion = st.questions.find(q => q.status === 'open' && q.recipient === 'field');
+    if (!fieldQuestion) throw new Error('No follow-up was delivered for the distribution gap.');
+    caption('BasketBrief asks Sami to check storage. His simulated reply confirms 12 returned kits; it does not invent households.', 9, N);
+    await apiAs('field', '/evidence', {method:'POST', body:JSON.stringify({
+      text:'Storage recount complete. Returned kits: 12.',
+      kind:'correction',question_id:fieldQuestion.id})});
+    st = await untilIdle();
+    if (st.report.payload.issues.length || st.summary.returned !== 12) throw new Error('The clarification did not resolve the discrepancy.');
+    caption('The gap is resolved: 88 delivered plus 12 returned. Amal can inspect both changes before approving the amendment.', 10, N);
+    await pause(5500);
+    await apiAs('coordinator','/approve',{method:'POST',body:JSON.stringify({report_id:st.report.id,hash:st.report.hash,acknowledge:false})});
+    st = await untilIdle(10);
+    caption('Both donors receive the approved amendment and its exact changes. Their original report stays unchanged.', 11, N);
+    await pause(5000);
+    captionDone('Live computation, fictional participants. The agent followed both gaps through to an approved amendment.');
   } catch (e) {
     if (String(e.message) !== 'stopped') captionDone('The run stopped: ' + e.message);
     else $('#story-caption').classList.remove('show');
@@ -163,11 +183,11 @@ function ownReceipt() {
   return `<section class="own" id="own"><div class="own-head">
       <span class="eyebrow">START HERE · YOUR OWN PAPER</span>
       <h2>Before the story, try it on something of yours.</h2>
-      <p>The same reader, the same guards. You will see it refuse a number that is not printed on your receipt.</p>
+      <p>Try the receipt reader on your own image. Compare its transcription with the original before trusting the figures.</p>
     <ul class="own-list">
       <li><b>It transcribes, it does not decide.</b> Amazon Nova Pro reads the picture; code turns it into typed fields.</li>
       <li><b>It adds your line items up</b> against the printed total, and if they disagree it says so — without rewriting your receipt.</li>
-      <li><b>It shows you its own limits:</b> the exact numbers that could enter a ledger from your paper, and nothing else.</li>
+      <li><b>It shows you its own limits:</b> the numbers it transcribed. Reading an image can be wrong; a human still reviews the source.</li>
     </ul>
     </div><div class="own-body">${body}</div></section>`;
 }
@@ -262,8 +282,8 @@ function storyline(s) {
     body:'Every new source is being read, recorded against the figures, and reconciled into both donor drafts.', tone:'working'};
   if (s.jobs.find(j => j.status === 'failed')) return {eyebrow:'FLOOD RELIEF · WEEK ONE · PAUSED', head:'The review<br><em>paused safely.</em>',
     body:'Nothing was lost. Your evidence is saved exactly as it arrived, and the review can be run again.', tone:'warn'};
-  if (supersededBy) return {eyebrow:'FLOOD RELIEF · WEEK ONE · CORRECTION ARRIVED', head:'Four households<br><em>with no answer.</em>',
-    body:`Version ${supersededBy.version - 1} is already with your donors. A later correction moved the counts, and the kits no longer add up — so the approval bound to the old version was refused and version ${supersededBy.version} is waiting for you.`, tone:'warn'};
+  if (supersededBy) return {eyebrow:'FLOOD RELIEF · WEEK ONE · CORRECTION ARRIVED', head:open.length ? 'A correction.<br><em>Followed through.</em>' : 'The correction<br><em>is ready.</em>',
+    body:open.length ? 'The counts changed after the report was shared. BasketBrief asked the field team to reconcile them; the previous approval cannot authorize this amendment.' : 'The field team clarified the counts. Review the changes against the last delivered report, then approve the amendment for both donors.' , tone:'warn'};
   if (open.length) return {eyebrow:'FLOOD RELIEF · WEEK ONE · ONE GAP', head:'One thing<br><em>is still missing.</em>',
     body:`BasketBrief asked ${esc(names[open[0].recipient])} for it directly, once. The answer will update both donor reports.`, tone:'warn'};
   if (r && r.status === 'delivered') return {eyebrow:'FLOOD RELIEF · WEEK ONE · DELIVERED', head:'Accounted for.<br><em>And in their hands.</em>',
@@ -314,11 +334,11 @@ function nextStep(s) {
   if (s.busy) { stageIndex = 1; content = `<h2 class="working-indicator"><span class="spinner"></span> Following the evidence.</h2><p>New sources, unanswered questions and both donor drafts are being reconciled. You can watch another role meanwhile — each one sees only its own evidence.</p>`; }
   else if (failed) { content = `<h2>The review needs a retry.</h2><p>${esc(failed.error)}</p><button class="button full" data-action="retry">Run the review again <span>↻</span></button>`; }
   else if (open.length) { stageIndex = 1; const q = open[0];
-    content = `<h2>Asked once.<br>Not asked again.</h2><p>BasketBrief went straight to ${esc(names[q.recipient])} — the person who has it — instead of routing it through you. One answer updates both donor reports.</p><div class="question-bubble"><div class="person"><span class="avatar">${esc(names[q.recipient][0])}</span>${esc(names[q.recipient])} · ${q.recipient==='finance'?'Supplies & receipts':'Delivery team'}</div><p>${esc(q.text)}</p></div><button class="button secondary full" data-role="${q.recipient}">Answer as ${esc(names[q.recipient])} <span>↗</span></button>`; }
+    content = `<h2>A clear question.<br>To the right person.</h2><p>BasketBrief went straight to ${esc(names[q.recipient])} — the person who has it — instead of routing it through you. One answer updates both donor reports.</p><div class="question-bubble"><div class="person"><span class="avatar">${esc(names[q.recipient][0])}</span>${esc(names[q.recipient])} · ${q.recipient==='finance'?'Supplies & receipts':'Delivery team'}</div><p>${esc(q.text)}</p></div><button class="button secondary full" data-role="${q.recipient}">Answer as ${esc(names[q.recipient])} <span>↗</span></button>`; }
   else if (r && r.status !== 'delivered' && deliveredCount) { stageIndex = 2;
-    content = `<h2>Some households<br>have no answer.</h2><p>A correction arrived after version ${r.version-1} was delivered. The kits stopped adding up, so the approval bound to the old version was refused. Nothing goes to a donor until you have seen what changed.</p>${issueList(r)}<button class="button full" data-action="approve">Approve version ${r.version} and send the correction <span>↗</span></button>${ackBox(r)}`; }
+    content = `<h2>The correction.<br>Ready to share.</h2><p>A clarification arrived after the previous report was delivered. Review exactly what changed before sharing this amendment.</p>${changeTable(r.payload)}${issueList(r)}<button class="button full" data-action="approve">Approve version ${r.version} and send the correction <span>↗</span></button>${ackBox(r)}`; }
   else if (r && r.status === 'delivered') { stageIndex = 3;
-    content = `<h2>Accounted for.<br>And in the right hands.</h2><p>Version ${r.version} sits in both donor inboxes. Approval and delivery are recorded against this exact content hash.</p><button class="button full" data-role="donor_a">Open Northstar’s copy <span>↗</span></button><div class="step-foot">✓ ${deliveredCount} inbox deliveries · approved on version ${r.version}</div>`; }
+    content = `<h2>Approved.<br>And in the right hands.</h2><p>Version ${r.version} sits in both donor inboxes. Approval and delivery are recorded against this exact content hash.</p><button class="button full" data-role="donor_a">Open Northstar’s copy <span>↗</span></button><div class="step-foot">✓ ${deliveredCount} inbox deliveries · approved on version ${r.version}</div>`; }
   else if (r && r.status !== 'outdated') { stageIndex = 2;
     content = `<h2>Ready for your eyes.</h2><p>Approval shares this exact version with both donor inboxes, and binds your name to its content hash.</p><div class="question-bubble"><b>Version ${r.version}</b> · ${s.evidence.length} sources reviewed<br>${s.summary.delivered ?? 'No'} kits field-reported · ${usd(s.summary.reported)} reported spending<br>Unique households: <b>${s.summary.households ?? 'not established'}</b></div>${issueList(r)}<button class="button full" data-action="approve">Approve version ${r.version} and deliver <span>↗</span></button>${ackBox(r)}`; }
   else { content = `<h2>Getting the story together.</h2><p>Your sources are saved. BasketBrief will prepare the next report version.</p><button class="button secondary" data-action="retry">Start the review</button>`; }
@@ -350,8 +370,15 @@ function coordinator(s) {
 function contributor(s) {
  const finance=role==='finance', questions=s.questions.filter(q=>q.status==='open');
  return hero(finance?'SUPPLIES INBOX · RANA':'DELIVERY INBOX · SAMI',finance?'A little evidence.<br><em>A big difference.</em>':'Your side of<br><em>the story.</em>',finance?'Answer here once. BasketBrief will carry the evidence into both donor reports.':'Share what happened on the ground. Corrections update the figures and require a fresh coordinator approval.')+
- `<div class="contributor-layout"><div>${questions.map(q=>`<section class="contributor-question"><span class="eyebrow">BASKETBRIEF ASKED YOU</span><h3>One answer, two reports.</h3><p>${esc(q.text)}</p><span class="badge amber">Awaiting your reply</span></section>`).join('')}<section class="panel contributor-form" id="sources"><h2>${questions.length?'Reply with the evidence.':'Add an update.'}</h2><form id="evidence-form"><label for="evidence-kind">What are you sharing?</label><select id="evidence-kind" name="kind">${finance?'<option value="receipt">Receipt transcript</option><option value="message">Message / evidence unavailable</option><option value="expense_claim">Expense without a receipt</option>':'<option value="correction">Correction to the figures</option><option value="message">Field update</option>'}</select><label for="evidence-text">${finance?'Receipt text or reply':'What changed?'}</label><textarea id="evidence-text" name="text" placeholder="${finance?'Paste the receipt text, or explain what is still missing.':'For example: Correction: 100 loaded, 90 delivered, 10 returned.'}" required maxlength="10000"></textarea><div class="form-actions"><button class="button" type="submit">Send ${questions.length?'reply':'evidence'} <span>↗</span></button><span class="form-hint">Saved to this workspace</span></div></form>${finance?'<form id="upload-form"><label class="upload-label" for="receipt-image"><span class="upload-copy">Or upload a photo of the receipt</span><input id="receipt-image" type="file" accept="image/png,image/jpeg" required><span class="upload-cta">Choose image</span><span class="upload-name" id="receipt-name">No file chosen</span></label><button class="button secondary" type="submit">Upload & read receipt ↗</button><p class="form-hint">PNG / JPEG · Under 2 MB. AI transcription requires the live Bedrock engine.</p></form>':''}<div class="sample"><p>TRY THE FICTIONAL SCENARIO · inserts editable sample text</p>${finance?'<button type="button" data-sample="receipt">Use transport receipt</button><button type="button" data-sample="missing">Receipt cannot be found</button>':'<button type="button" data-sample="correction">Correct to 90 delivered</button>'}</div></section></div><section class="panel"><div class="panel-head"><h2>Your evidence.</h2><span class="count">${s.evidence.length} sources</span></div>${sourceCards(s.evidence)}<div class="evidence-note">Only your own evidence is visible in this role. The coordinator reviews the full report.</div></section></div>`;
+ `<div class="contributor-layout"><div>${questions.map(q=>`<section class="contributor-question"><span class="eyebrow">BASKETBRIEF ASKED YOU</span><h3>One answer, two reports.</h3><p>${esc(q.text)}</p><span class="badge amber">Awaiting your reply</span></section>`).join('')}<section class="panel contributor-form" id="sources"><h2>${questions.length?'Reply with the evidence.':'Add an update.'}</h2><form id="evidence-form"><label for="evidence-kind">What are you sharing?</label><select id="evidence-kind" name="kind">${finance?'<option value="receipt">Receipt transcript</option><option value="message">Message / evidence unavailable</option><option value="expense_claim">Expense without a receipt</option>':'<option value="correction">Correction to the figures</option><option value="message">Field update</option>'}</select><label for="evidence-text">${finance?'Receipt text or reply':'What changed?'}</label><textarea id="evidence-text" name="text" placeholder="${finance?'Paste the receipt text, or explain what is still missing.':'For example: Correction: 100 loaded, 90 delivered, 10 returned.'}" required maxlength="10000"></textarea><div class="form-actions"><button class="button" type="submit">Send ${questions.length?'reply':'evidence'} <span>↗</span></button><span class="form-hint">Saved to this workspace</span></div></form>${finance?'<form id="upload-form"><label class="upload-label" for="receipt-image"><span class="upload-copy">Or upload a photo of the receipt</span><input id="receipt-image" type="file" accept="image/png,image/jpeg" required><span class="upload-cta">Choose image</span><span class="upload-name" id="receipt-name">No file chosen</span></label><button class="button secondary" type="submit">Upload & read receipt ↗</button><p class="form-hint">PNG / JPEG · Under 2 MB. AI transcription requires the live Bedrock engine.</p></form>':''}<div class="sample"><p>TRY THE FICTIONAL SCENARIO · inserts editable sample text</p>${finance?'<button type="button" data-sample="receipt">Use transport receipt</button><button type="button" data-sample="missing">Receipt cannot be found</button>':'<button type="button" data-sample="correction">Correct to 88 delivered</button><button type="button" data-sample="resolution">Confirm 12 returned</button>'}</div></section></div><section class="panel"><div class="panel-head"><h2>Your evidence.</h2><span class="count">${s.evidence.length} sources</span></div>${sourceCards(s.evidence)}<div class="evidence-note">Only your own evidence is visible in this role. The coordinator reviews the full report.</div></section></div>`;
 }
+function changeTable(payload, ar=false) {
+  const changes = Object.entries(payload?.changes || {});
+  if (!payload?.amends || !changes.length) return '';
+  const labels = ar ? {delivered:'الطرود المسلّمة',returned:'الطرود المرتجعة',loaded:'الطرود المحمّلة',households:'الأسر',reported:'الإنفاق المبلّغ',supported:'إنفاق بإيصالات',unsupported:'إنفاق بلا إيصال'} : {delivered:'Delivered kits',returned:'Returned kits',loaded:'Loaded kits',households:'Households',reported:'Reported spending',supported:'Receipt-supported',unsupported:'Without receipt'};
+  return `<section class="changes" aria-label="${ar?'التغييرات':'Changes since the delivered report'}"><div class="eyebrow">${ar?'تعديل على النسخة':'AMENDMENT TO VERSION'} ${payload.amends.version}</div><table class="report-table"><thead><tr><th>${ar?'البند':'What changed'}</th><th>${ar?'السابق':'Before'}</th><th>${ar?'الجديد':'Now'}</th></tr></thead><tbody>${changes.map(([k,v])=>`<tr><th scope="row">${esc(labels[k]||k)}</th><td>${esc(v.before??(ar?'غير معروف':'Unknown'))}</td><td><strong>${esc(v.after??(ar?'غير معروف':'Unknown'))}</strong></td></tr>`).join('')}</tbody></table></section>`;
+}
+
 function reportTable(s, ar=false) { const rows=ar?[['الطرود المسلّمة حسب الفريق',s.delivered??'غير معروف'],['الطرود المرتجعة',s.returned??'غير معروف'],['الأسر الفريدة',s.households??'غير معروف'],['الإنفاق المبلّغ عنه',usd(s.reported)],['الإنفاق المدعوم بإيصالات',usd(s.supported)],['إنفاق بلا إيصال',usd(s.unsupported)]]:[['Kits delivered · field-reported',s.delivered??'Not established'],['Kits returned',s.returned??'Not established'],['Unique households',s.households??'Not established'],['Reported spending',usd(s.reported)],['Receipt-supported spending',usd(s.supported)],['Spending without a receipt',usd(s.unsupported)]]; return '<table class="report-table">'+rows.map(([k,v])=>`<tr><th scope="row">${k}</th><td>${esc(v)}</td></tr>`).join('')+'</table>'; }
 function amendmentNote(s, ar) {
   // Named in the donor's own language, and only ever about the existence of a
@@ -362,7 +389,7 @@ function amendmentNote(s, ar) {
     ? `وصل تصحيح بعد إرسال النسخة ${held}. النسخة ${pending} بانتظار موافقة المنسّقة، وما تقرأه هنا هو ما أُرسل إليك بالضبط.`
     : `A correction arrived after version ${held} was sent to you. Version ${pending} is with the coordinator for approval — what you are reading is exactly what was delivered.`}</div>`;
 }
-function donor(s) { const reports=s.inbox.filter(i=>i.kind==='report'), ar=role==='donor_b'; return hero('DONOR INBOX · '+esc(names[role]),'The work.<br><em>With the evidence.</em>','Approved snapshots from the first week of flood relief. Each version stays as it was shared.',false)+amendmentNote(s,ar)+`<section id="reports">${reports.length?reports.map(i=>`<article class="panel inbox-card" ${ar?'lang="ar" dir="rtl"':''}><span class="badge">✓ ${ar?'نسخة معتمدة':'Approved snapshot'} · v${i.body.version}</span><h2>${ar?'تقرير إغاثة الفيضان — الأسبوع الأول':'Flood relief distribution — week one'}</h2>${reportTable(i.body.summary,ar)}${i.body.issues.length?`<div class="issues">${i.body.issues.map(esc).join('<br>')}</div>`:''}<p class="report-disclosure">${ar?'سيناريو تجريبي ببيانات مصطنعة. أعداد التسليم من إفادة الفريق وليست تحققًا مستقلًا. الإيصال ليس إثباتًا للأثر.':esc(i.body.disclosure)}</p><button class="button secondary" data-export="${i.body.report_id}">${ar?'تنزيل التقرير':'Download report'} ↓</button><p class="receipt-id" dir="ltr">Native inbox receipt: ${esc(i.delivery_key)}<br>SHA-256 ${esc(i.body.hash)}</p></article>`).join(''):'<div class="panel empty-state"><div class="small-star" aria-hidden="true">✳</div><h2>Good things take a little follow-through.</h2><p>No report has been shared yet. The coordinator must review and approve a version before it appears here.</p><button class="button secondary" data-role="coordinator">Back to Amal’s workspace →</button></div>'}</section>`; }
+function donor(s) { const reports=s.inbox.filter(i=>i.kind==='report'), ar=role==='donor_b'; return hero('DONOR INBOX · '+esc(names[role]),'The work.<br><em>With the evidence.</em>','Approved snapshots from the first week of flood relief. Each version stays as it was shared.',false)+amendmentNote(s,ar)+`<section id="reports">${reports.length?reports.map(i=>`<article class="panel inbox-card" ${ar?'lang="ar" dir="rtl"':''}><span class="badge">✓ ${ar?'نسخة معتمدة':'Approved snapshot'} · v${i.body.version}</span><h2>${ar?'تقرير إغاثة الفيضان — الأسبوع الأول':'Flood relief distribution — week one'}</h2>${changeTable(i.body,ar)}${reportTable(i.body.summary,ar)}${i.body.issues.length?`<div class="issues">${i.body.issues.map(esc).join('<br>')}</div>`:''}<p class="report-disclosure">${ar?'سيناريو تجريبي ببيانات مصطنعة. أعداد التسليم من إفادة الفريق وليست تحققًا مستقلًا. الإيصال ليس إثباتًا للأثر.':esc(i.body.disclosure)}</p><button class="button secondary" data-export="${i.body.report_id}">${ar?'تنزيل التقرير':'Download report'} ↓</button><p class="receipt-id" dir="ltr">Native inbox receipt: ${esc(i.delivery_key)}<br>SHA-256 ${esc(i.body.hash)}</p></article>`).join(''):'<div class="panel empty-state"><div class="small-star" aria-hidden="true">✳</div><h2>Good things take a little follow-through.</h2><p>No report has been shared yet. The coordinator must review and approve a version before it appears here.</p><button class="button secondary" data-role="coordinator">Back to Amal’s workspace →</button></div>'}</section>`; }
 function render(s) {
  const active=document.activeElement, saved={};
  $('#content').querySelectorAll('textarea,select,input[type="checkbox"]').forEach(el=>saved[el.id]={value:el.value,checked:el.checked});
@@ -401,7 +428,7 @@ document.addEventListener('click', async e=>{
  try {
  if(b.dataset.role){await switchRole(b.dataset.role);return;}
  if(b.dataset.source){await showSource(b.dataset.source);return;}
- if(b.dataset.sample){const samples={receipt:['receipt','TRUCK HIRE RECEIPT TR-204. Vehicle rental for the flood relief run. Total USD 60.00. Paid. Synthetic receipt.'],missing:['message','I cannot find the transport receipt. Keep the USD 60 expense reported but unsupported.'],correction:['correction','Correction to our previous update: 100 kits loaded, 90 kits delivered, 10 returned to the church hall. Unique household count is still unknown.']};const [kind,text]=samples[b.dataset.sample];$('#evidence-kind').value=kind;$('#evidence-text').value=text;$('#evidence-text').focus();return;}
+ if(b.dataset.sample){const samples={receipt:['receipt','TRUCK HIRE RECEIPT TR-204. Vehicle rental for the flood relief run. Total USD 60.00. Paid. Synthetic receipt.'],missing:['message','I cannot find the transport receipt. Keep the USD 60 expense reported but unsupported.'],correction:['correction','Correction: 88 kits were delivered, not 92.'],resolution:['correction','Storage recount complete. Returned kits: 12.']};const [kind,text]=samples[b.dataset.sample];$('#evidence-kind').value=kind;$('#evidence-text').value=text;$('#evidence-text').focus();return;}
  if(b.dataset.export){b.disabled=true;const response=await api('/reports/'+b.dataset.export,{raw:true});const url=URL.createObjectURL(await response.blob());const a=document.createElement('a');a.href=url;a.download='BasketBrief-report-'+b.dataset.export+(role==='donor_b'?'-ar':'')+'.html';a.click();setTimeout(()=>URL.revokeObjectURL(url),10000);return;}
  if(b.dataset.action==='own-reset'){ownReading=null;render(state);return;}
  if(b.dataset.action==='play-story'){playStory();return;}

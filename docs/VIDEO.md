@@ -1,66 +1,55 @@
-# BasketBrief — demo film
+# BasketBrief replacement demo film
 
-**Delivered:** `BasketBrief-demo.mp4` — 2:17 (136.6 s), 1920×1080, H.264 / AAC, 9.1 MB.
+Target: 2–3 minutes, 1920×1080, public YouTube or Vimeo, under the competition's five-minute limit.
 
-The first cut was one uncut screen recording with a voice reading a story over it:
-a third of it was a still frame, and the page was recorded at a width that made
-every word unreadable in a small player. This one is edited.
+The film must show the post-review behavior and avoid the withdrawn claims in the first recording. Product footage comes from one continuous browser-driven run of the deployed application. Cards may explain context and architecture; they must not re-enact product behavior.
 
-Three things changed, and they are the whole difference:
+## Story
 
-- **The page is laid out at 1280 CSS pixels inside a 1920×1080 frame,** so every
-  word is half again as large. A judge watches in a small player.
-- **It is cut.** Nineteen beats, hard cuts, the payoff first and the explanation
-  after. Detail shots are composed onto the film's own ground rather than blown
-  up, so nothing is soft.
-- **The cards are the product's typography,** rendered in a browser against the
-  same stylesheet the app serves — so the film and the app are one object.
+Open on the amendment payoff: the donor report was already sent, then the field count changed. BasketBrief followed up until the discrepancy closed and delivered a new approved version without changing the old one.
 
-Nothing is re-enacted. Every product frame comes from one continuous recording of
-the deployed app driving the live agent on Amazon Bedrock; the cuts only choose
-where to look. Where the app writes its own caption, the narration says the same
-thing; where it would say something else, the shot is cropped so it is not on
-screen.
+Then explain the person and problem, show the receipt follow-up and first delivery, return to the late correction, and finish with the exact before/after table.
 
-## The cut
+## Voiceover and shot plan
 
-| # | Picture | Narration |
+| Beat | Picture | Voiceover |
 |---|---|---|
-| 1 | Payoff, punched in: **“Four households with no answer.”** 88 · $1,260 · $0 | Four kits are missing, and BasketBrief will not sign the report until someone says where they went. |
-| 2 | Card — *the evening this takes* | Every week, a small aid group has to prove to its donors where the money went. |
-| 3 | Card — *who it is for* | Neighbourhood groups. Food banks. Small nonprofits. The receipts are with one person, the counts with another, and one receipt is always missing. |
-| 4 | The settled workspace | BasketBrief is the agent that does the chasing. |
-| 5 | Card — *start with your own paper* | Start with a receipt from your own wallet. |
-| 6 | The own-receipt panel | The same deployed agent reads your paper on Amazon Bedrock. |
-| 7 | The read: vendor, invoice, line-item sum, the chip row | Vendor, invoice, line items, added up against the printed total — and the only numbers that could ever enter a ledger from it. Anything else is refused by the code, not by the prompt. |
-| 8 | Card — *now the group's own week* | One button. The live agent. |
-| 9 | Hero: **One thing is still missing** · $60 | One button runs the live agent. It finds the gap — sixty dollars with no receipt — and asks the one person who has it, once. |
-| 10 | Full frame, the app's caption 3/8 | She answers with a photograph, and Nova Pro reads it on AgentCore Runtime before the review even starts. |
-| 11 | Hero: **The evidence is in order** · $1,260 · $0 | Sixty dollars, printed on the paper. Every reported dollar now has a receipt behind it. |
-| 12 | Full frame, the app's caption 5/8 | One human decision, bound to one version and its content hash. Both donors receive it. |
-| 13 | Full frame, the app's caption 7/8 | Then the count changes. Eighty-eight, not ninety-two. |
-| 14 | Hero: **Four households with no answer** · 88 | A hundred loaded. Eighty-eight out, eight back. Four unaccounted for. |
-| 15 | The gap sentence alone, full width | And BasketBrief says what those four are: households that registered at the shelter and have no answer either way. That sentence is written by the reconciliation code, not by the model. |
-| 16 | Card — *where the line is drawn* | The model decides what a source means. The code decides what is allowed. |
-| 17 | Card — one cycle, end to end | Strands on Amazon Bedrock. The reader deployed on AgentCore Runtime, the team's vendor history in AgentCore Memory, and a follow-up gate that re-checks the model after its turn. |
-| 18 | Card — *measured, not claimed* | Seven identical runs. Fifty-three tests, twenty-eight of them adversarial. Three prompt injections refused. |
-| 19 | End card | BasketBrief. It chases the evidence, and it will not sign off on four households it cannot account for. |
+| 1 | Amendment table: delivered 92 → 88, returned 8 → 12 | The report was already with both donors. Then the count changed. BasketBrief followed through. |
+| 2 | Problem card | Small aid groups lose hours chasing receipts, reconciling field messages, and keeping donor reports consistent. |
+| 3 | Who card: Amal, Rana, Sami, two donors | Amal coordinates the work. The receipt is with Rana. The distribution count is with Sami. Two donors need the same evidence. |
+| 4 | Fresh workspace, three sources | BasketBrief is a Strands agent that owns the follow-up work. |
+| 5 | Missing receipt question in Rana's inbox | It finds sixty dollars without a receipt and asks the person who can resolve it. One answer serves both reports. |
+| 6 | Receipt image and transcription | Nova Pro reads the synthetic receipt through AgentCore Runtime. The original image stays available for human review. |
+| 7 | First approval and two donor inboxes | Amal approves one exact version. The content hash binds that approval, and both donors receive immutable snapshots. |
+| 8 | Correction to 88 and HTTP 409 | After delivery, Sami corrects ninety-two to eighty-eight. The old approval cannot authorize a report nobody reviewed. |
+| 9 | Four-kit discrepancy and question to Sami | Four kits are now unaccounted for. That does not tell us how many households were affected, so BasketBrief asks Sami to check the records. |
+| 10 | Sami answers returned=12; issue closes | Sami confirms twelve returned. The figures reconcile without inventing impact. |
+| 11 | Before/after table and both donor amendments | Amal sees both changes, approves the amendment, and each donor receives the new snapshot beside the original. |
+| 12 | Architecture card | Nova Pro chooses tools. Code owns typed facts, arithmetic, roles, follow-up delivery, report versions, and approval validity. AgentCore Runtime reads images; AgentCore Memory carries an advisory vendor history. |
+| 13 | Evidence card | Seventy-six tests pass. Three consecutive live staging journeys completed in sixty-three to sixty-six seconds with four donor snapshots and no browser errors. |
+| 14 | Scope/end card | The scenario is fictional. We measured system behavior, not human time or aid impact. BasketBrief: the report was sent, then the count changed, and the work still got finished. |
 
-## Production
+## Required visual proof
 
-- `scripts/record_v2.py` drives the deployed app with Playwright, marks every beat
-  off the app's own caption state, and writes `video2/marks.json`.
-- `scripts/cards.html` holds the cards; they are screenshotted in the browser so
-  they carry the real fonts and the real colour tokens.
-- `scripts/build_film.py` cuts, composes, narrates and mixes. Narration offsets
-  are taken from the encoded clips, not the plan, so the voice cannot walk off
-  the picture.
-- Voice `edge-tts en-US-AndrewNeural` at +6%. Loudness normalised to −16 LUFS.
-  H.264 (libopenh264) yuv420p 30 fps, AAC 48 kHz.
-- Every beat was checked as an extracted frame before the film was published.
+- The engine label reads **Live agent · Strands + Bedrock**.
+- The receipt reader shows where the image was read.
+- The first report is visible in both donor inboxes before the correction.
+- Reuse of the first approval returns HTTP 409 or the equivalent visible caption.
+- The reconciliation question is visible in Sami's role.
+- The amendment table shows both changed fields.
+- Each donor inbox contains the original and amended snapshot.
+- The English disclosure states that the scenario is synthetic and field counts are not independently verified.
 
-## YouTube
+## Claims excluded
 
-- Visibility **Public**, not made for kids, embedding on, category Science & Technology, language English.
-- Title: `BasketBrief — chases the missing evidence, then delivers the donor report | Agents for Humans`
-- Verify in a private window before pasting the URL into Devpost.
+- No “four households” claim.
+- No “41 manual acts → 2” comparison.
+- No statement that a live model refused three prompt injections.
+- No claim that OCR proves what the original pixels contain.
+- No claim of real users, savings, delivery impact, or external donor delivery.
+
+## Upload metadata
+
+- **Title:** `BasketBrief — the report changed, and the agent followed through | Agents for Humans`
+- **Visibility:** Public
+- **Description:** `BasketBrief follows missing evidence through two approved donor reports, then handles a late field correction end to end. Built with the Strands Agents SDK, Amazon Bedrock Nova Pro, AgentCore Runtime, and AgentCore Memory. Fictional scenario; measured system behavior, no claimed human-time or aid impact. Live demo: https://basketbrief.mlki.app Code: https://github.com/NexuChat/basketbrief`

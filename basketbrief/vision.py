@@ -178,7 +178,8 @@ def as_source_text(reading: dict) -> str:
     """The transcription, written back as the evidence text.
 
     Everything downstream — the amount guard, the report, the audit trail — reads this
-    text, so an amount can only enter the ledger if it was actually printed on the paper.
+    text. The source checks constrain the transcription, not the original pixels;
+    OCR can be wrong and the coordinator must review the image.
     """
     if not reading.get("ok"):
         return "RECEIPT IMAGE · unreadable. " + str(reading.get("reason") or "")[:160]

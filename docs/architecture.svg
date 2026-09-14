@@ -21,8 +21,8 @@
   <rect x="56" y="352" width="286" height="150" rx="14" fill="#fffefb" stroke="#dfe4d6" stroke-width="2"/>
   <text x="78" y="386" font-size="18" font-weight="700" fill="#193e33">Amal · Coordinator</text>
   <text x="78" y="412" font-size="14" fill="#5c6a5c">One page: the figures, the sources behind</text>
-  <text x="78" y="432" font-size="14" fill="#5c6a5c">them, what is unresolved, and the single</text>
-  <text x="78" y="452" font-size="14" fill="#5c6a5c">decision that is hers — approve this version.</text>
+  <text x="78" y="432" font-size="14" fill="#5c6a5c">them, what is unresolved, and the exact</text>
+  <text x="78" y="452" font-size="14" fill="#5c6a5c">version she can inspect and approve.</text>
   <text x="78" y="480" font-size="13" fill="#8a9487">She is not asked to relay messages.</text>
 
   <rect x="56" y="532" width="286" height="132" rx="14" fill="#fffefb" stroke="#dfe4d6" stroke-width="2"/>
@@ -37,7 +37,7 @@
   <text x="78" y="754" font-size="14" fill="#4a6a4d">Reads the receipt photograph → typed fields</text>
   <text x="78" y="774" font-size="14" fill="#4a6a4d">Code adds the line items up against the</text>
   <text x="78" y="794" font-size="14" fill="#4a6a4d">printed total; a disagreement is surfaced,</text>
-  <text x="78" y="814" font-size="14" fill="#4a6a4d">never corrected. Transcription = source text.</text>
+  <text x="78" y="814" font-size="14" fill="#4a6a4d">never corrected. The original stays visible.</text>
 
   <!-- the agent -->
   <rect x="400" y="126" width="620" height="718" rx="18" fill="#fff9ec" stroke="#d9a441" stroke-width="3"/>
@@ -61,7 +61,7 @@
 
   <rect x="428" y="540" width="564" height="128" rx="12" fill="#fffefb" stroke="#9a5c20" stroke-width="2"/>
   <text x="450" y="568" font-size="15" font-weight="700" fill="#8a5a00">Guards that live in code, not in the prompt</text>
-  <text x="450" y="592" font-size="13" fill="#5c6a5c">· An amount is recordable only if it literally appears in that source's text.</text>
+  <text x="450" y="592" font-size="13" fill="#5c6a5c">· An amount needs a stated total or currency context in that source's text.</text>
   <text x="450" y="612" font-size="13" fill="#5c6a5c">· A field the source does not state is dropped — it never costs the counts the source does state.</text>
   <text x="450" y="632" font-size="13" fill="#5c6a5c">· Kits loaded, delivered, returned and unique households are four different facts.</text>
   <text x="450" y="652" font-size="13" fill="#5c6a5c">· Source text is untrusted data: an instruction inside a message is evidence, not a command.</text>
@@ -69,8 +69,8 @@
   <rect x="428" y="688" width="564" height="130" rx="12" fill="#eef4e4" stroke="#b9cfa6" stroke-width="2"/>
   <text x="450" y="716" font-size="15" font-weight="700" fill="#2f5c3c">Follow-up gate — after the model's turn</text>
   <text x="450" y="740" font-size="13" fill="#4a6a4d">Code recomputes the known gaps: unsupported spending, or a missing delivery count.</text>
-  <text x="450" y="760" font-size="13" fill="#4a6a4d">If one has no open question, the agent is handed it once and asks in its own words.</text>
-  <text x="450" y="780" font-size="13" fill="#4a6a4d">The promise "it follows up" therefore does not depend on the model remembering to.</text>
+  <text x="450" y="760" font-size="13" fill="#4a6a4d">If one has no open question, code creates a scoped question for the right role.</text>
+  <text x="450" y="780" font-size="13" fill="#4a6a4d">A single grounded reply can be applied before the model turn; ambiguity stays open.</text>
   <text x="450" y="802" font-size="13" fill="#4a6a4d">A question already open is never asked a second time.</text>
 
   <!-- state / outputs -->
@@ -80,12 +80,12 @@
   <text x="1100" y="208" font-size="14" fill="#5c6a5c">source that stated it · questions · report versions with a content hash ·</text>
   <text x="1100" y="228" font-size="14" fill="#5c6a5c">approvals · delivery intents · receipts · an append-only event log</text>
   <text x="1100" y="258" font-size="13" fill="#8a9487">Every number the coordinator and the donors see is read from here.</text>
-  <text x="1100" y="278" font-size="13" fill="#8a9487">Report prose is written by the model; report figures never are.</text>
+  <text x="1100" y="278" font-size="13" fill="#8a9487">Report figures and prose come from deterministic templates over stored facts.</text>
   <text x="1100" y="306" font-size="14" fill="#5c6a5c">A new source bumps the project revision, which marks dependent</text>
   <text x="1100" y="326" font-size="14" fill="#5c6a5c">drafts outdated and invalidates approvals bound to the old version.</text>
 
   <rect x="1078" y="378" width="546" height="176" rx="14" fill="#fff9ec" stroke="#d9a441" stroke-width="2"/>
-  <text x="1100" y="412" font-size="18" font-weight="700" fill="#193e33">Approval — the only human gate</text>
+  <text x="1100" y="412" font-size="18" font-weight="700" fill="#193e33">Approval — the exact-version gate</text>
   <text x="1100" y="440" font-size="14" fill="#5c6a5c">The coordinator approves one exact version: report id + content hash +</text>
   <text x="1100" y="460" font-size="14" fill="#5c6a5c">revision + recipients. Unresolved items must be acknowledged explicitly.</text>
   <text x="1100" y="488" font-size="14" fill="#8a5a00">If evidence changed in between, the approval is refused —</text>

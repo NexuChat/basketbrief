@@ -89,32 +89,38 @@ def main():
                 seen.add(step)
                 mark(f"story_{step}")
                 last = time.time()
-            if "That was the live agent" in pg.content():
+            if step == "11" and "Both donors receive" in pg.content():
                 mark("story_done")
                 break
             pg.wait_for_timeout(400)
         pg.wait_for_timeout(1500)
 
-        # ── hold on the payoff, then on the gap sentence
+        # ── hold on the completed amendment and its before/after table
         pg.evaluate("window.scrollTo({top:0})")
         pg.wait_for_timeout(1200)
-        mark("payoff_head")
+        mark("amendment_head")
         pg.wait_for_timeout(6000)
         try:
-            pg.eval_on_selector(".issues", "el => el.scrollIntoView({block:'center'})")
+            pg.eval_on_selector(".changes", "el => el.scrollIntoView({block:'center'})")
         except Exception:
             pg.evaluate("window.scrollBy({top:520})")
         pg.wait_for_timeout(1400)
-        mark("gap_sentence")
+        mark("amendment_changes")
         pg.wait_for_timeout(6000)
 
-        # ── the evidence trail the agent wrote
-        try:
-            pg.eval_on_selector(".timeline", "el => el.scrollIntoView({block:'center'})")
-        except Exception:
-            pg.evaluate("window.scrollBy({top:640})")
+        # ── immutable donor snapshots, in both languages
+        await_role = lambda value: pg.select_option("#role", value)
+        await_role("donor_a")
         pg.wait_for_timeout(1400)
-        mark("timeline")
+        pg.eval_on_selector("#reports", "el => el.scrollIntoView({block:'start'})")
+        pg.wait_for_timeout(1000)
+        mark("donor_english")
+        pg.wait_for_timeout(6000)
+        await_role("donor_b")
+        pg.wait_for_timeout(1400)
+        pg.eval_on_selector("#reports", "el => el.scrollIntoView({block:'start'})")
+        pg.wait_for_timeout(1000)
+        mark("donor_arabic")
         pg.wait_for_timeout(6000)
         mark("end")
 

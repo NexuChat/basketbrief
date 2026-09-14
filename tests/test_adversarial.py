@@ -4,9 +4,9 @@ A green happy path proves nothing about an agent that handles other people's
 money. Each case here is a defect we deliberately put in front of the tools, with
 the behaviour we expect. The results are published in docs/EVALUATION.md.
 
-These exercise the guards, not the model: the point is that a wrong answer from
-any model cannot become a fact, so the guarantees do not depend on which model
-happens to be behind the tools today.
+These exercise the guards, not the model. They pin the tested storage and
+permission boundaries; they do not establish resistance to every model error or
+prompt injection.
 """
 
 from __future__ import annotations
@@ -46,7 +46,7 @@ def source_id(store, pid, needle):
 
 # ── an amount the source never stated ─────────────────────────────────────
 def test_an_invented_amount_cannot_become_a_fact(project):
-    """The single most important guard: money must be printed on the paper."""
+    """The single most important guard: money must be stated in source text."""
     store, pid, _ = project
     eid = source_id(store, pid, "SUPPLIES RECEIPT")
     with pytest.raises(Conflict):
@@ -128,13 +128,13 @@ def test_a_correction_that_stops_adding_up_is_still_recorded(project):
     assert "household" in result["note"] and "4" in result["note"]
 
 
-def test_the_gap_is_named_in_households_not_only_in_arithmetic(project):
+def test_the_gap_keeps_affected_households_unknown(project):
     store, pid, _ = project
     eid = source_id(store, pid, "We loaded 100 kits")
     store.record_distribution(pid, eid, loaded=100, delivered=92, returned=8)
     later = store.submit(pid, "field", "Recount: 88 delivered.", "message")["id"]
     note = store.record_distribution(pid, later, delivered=88)["note"]
-    assert "no answer either way" in note
+    assert "not established" in note and "4 households" not in note
 
 
 # ── identity and authority ─────────────────────────────────────────────────

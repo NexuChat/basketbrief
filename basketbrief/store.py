@@ -9,6 +9,7 @@ import time
 from contextlib import contextmanager
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
+from .grounding import expense_amounts, field_values
 
 
 class Conflict(ValueError):
@@ -230,16 +231,26 @@ class Store:
             e = self.get_evidence(c, pid, eid, "finance")
             if currency != "USD" or re.search(r"\b(EUR|GBP|YER)\b", e["text"], re.I):
                 raise Conflict("Currency needs a finance decision. No exchange rate was assumed.")
-            if Decimal(amount) not in numeric_values(e["text"]):
-                raise Conflict("The amount does not appear in this source. Ask for clarification.")
+            if expense_amounts(e["text"]) != {Decimal(amount)}:
+                raise Conflict("The amount must be the unambiguous stated total or currency-tagged expense, not a quantity, identifier, or unit price. Ask for clarification.")
             if supported and e["kind"] != "receipt":
                 raise Conflict("An expense message is not a supporting receipt.")
             if e["status"] == "accepted":
                 return {"recorded": False, "reason": "already accepted"}
+            previous = self.facts(c, pid).get(category)
+            if previous and previous["source"] != eid:
+                old = previous["value"]
+                # This demo tracks one supplies purchase and one transport charge.
+                # A matching receipt may support a claim; a distinct transaction
+                # must never silently replace it.
+                separate = re.search(r"\b(additional|separate|second|another)\b", e["text"], re.I)
+                correction = e["kind"] == "correction" or re.search(r"\b(correction|corrected|replaces|replace previous)\b", e["text"], re.I)
+                if separate or (not correction and (old["amount"] != amount or old["supported"])):
+                    raise Conflict("A different expense already exists in this category. This demo supports one transaction per category. Clarify an explicit correction; separate purchases cannot overwrite it.")
             self.set_fact(c, pid, category, {"amount": amount, "supported": bool(supported), "currency": currency}, eid)
             c.execute("UPDATE evidence SET status='accepted',note=? WHERE id=?", (f"{category.title()} · USD {amount} · {'receipt-supported' if supported else 'reported, receipt missing'}", eid))
-            if category == "transport" and supported:
-                c.execute("UPDATE questions SET status='answered' WHERE project=? AND key='transport_receipt'", (pid,))
+            if supported:
+                c.execute("UPDATE questions SET status='answered' WHERE project=? AND key=?", (pid, f"{category}_receipt"))
             self.event(c, pid, "fact", f"{category.title()} expense linked to its source", {"evidence_id": eid, "amount": amount, "supported": supported})
             return {"recorded": True}
 
@@ -256,8 +267,8 @@ class Store:
             for key, v in list(vals.items()):
                 if v is None:
                     continue
-                if type(v) is not int or not 0 <= v <= 10000 or Decimal(v) not in numbers:
-                    ignored[key] = "not stated in this source"
+                if type(v) is not int or not 0 <= v <= 10000 or v not in field_values(e["text"], key):
+                    ignored[key] = "not explicitly associated with this field in the source, or denied"
                     vals[key] = None
                 elif key == "households" and not states_household_count(e["text"], v):
                     ignored[key] = ("the source does not state a household count; "
@@ -278,20 +289,22 @@ class Store:
             if all(isinstance(merged.get(k), int) for k in ("loaded", "delivered", "returned")):
                 missing = merged["loaded"] - merged["delivered"] - merged["returned"]
                 if missing:
-                    # The arithmetic is the easy half. What it means is that some
-                    # households on the list have no answer, and the report says so
-                    # in those words rather than hiding behind a sum.
+                    # A kit discrepancy says nothing about unique households or
+                    # registration. Preserve that distinction in prose too.
                     n = abs(missing)
                     if missing > 0:
                         gap = (f"{n} kit{'s' if n != 1 else ''} unaccounted for: "
                                f"{merged['loaded']} loaded, {merged['delivered']} reported "
                                f"delivered, {merged['returned']} returned. "
-                               f"{n} household{'s that registered at the shelter have' if n != 1 else ' that registered at the shelter has'} "
-                               f"no answer either way.")
+                               "The field team must clarify their disposition. "
+                               "The number of affected households is not established.")
                     else:
                         gap = (f"{merged['delivered']} delivered plus {merged['returned']} "
                                f"returned is {n} more than the {merged['loaded']} loaded. "
                                f"One of these counts is wrong.")
+            # Keep original source rows for the audit, but retire a prior arithmetic
+            # issue once a later field update supersedes the current reconciliation.
+            c.execute("UPDATE evidence SET status='superseded' WHERE project=? AND actor='field' AND status='review' AND (note LIKE '%unaccounted for:%' OR note LIKE '%One of these counts is wrong.%') AND id<?", (pid, eid))
             if gap:
                 c.execute("UPDATE evidence SET status='review',note=? WHERE id=?", (gap, eid))
                 self.event(c, pid, "review", "An uncertainty stays visible", {"evidence_id": eid, "reason": gap})
@@ -299,6 +312,10 @@ class Store:
                 c.execute("UPDATE evidence SET status='accepted',note='Field-reported counts; not independently verified' WHERE id=?", (eid,))
             if delivered is not None:
                 c.execute("UPDATE questions SET status='answered' WHERE project=? AND key='delivery_count'", (pid,))
+            if e["question_id"]:
+                c.execute("UPDATE questions SET status='answered' WHERE project=? AND id=?", (pid, e["question_id"]))
+            if not gap:
+                c.execute("UPDATE questions SET status='answered' WHERE project=? AND key LIKE 'distribution_reconciliation:%' AND status='open'", (pid,))
             self.event(c, pid, "correction" if e["kind"] == "correction" else "fact",
                        "Distribution figures updated from the field",
                        {"evidence_id": eid, **{k: v for k, v in vals.items() if v is not None},
@@ -361,7 +378,7 @@ class Store:
         gaps = []
         with self.db() as c:
             open_keys = {r["key"] for r in c.execute(
-                "SELECT key FROM questions WHERE project=? AND status IN ('open','answered')", (pid,))}
+                "SELECT key FROM questions WHERE project=?", (pid,))}
             facts = self.facts(c, pid)
         for key in ("transport", "supplies"):
             fact = facts.get(key)
@@ -372,7 +389,25 @@ class Store:
                              f"without a receipt."))
         if facts.get("delivered") is None and "delivery_count" not in open_keys:
             gaps.append(("delivery_count", "field", "No field-reported delivery count has been recorded."))
+        reconciliation = self.reconciliation(facts)
+        if reconciliation and reconciliation[0] not in open_keys:
+            gaps.append((reconciliation[0], "field", reconciliation[1]))
         return gaps
+
+    @staticmethod
+    def reconciliation(facts):
+        keys = ("loaded", "delivered", "returned")
+        if not all(k in facts for k in keys):
+            return None
+        loaded, delivered, returned = (facts[k]["value"] for k in keys)
+        gap = loaded - delivered - returned
+        if not gap:
+            return None
+        key = "distribution_reconciliation:" + "-".join(str(facts[k]["source"]) for k in keys)
+        return key, (f"The current counts differ by {abs(gap)} kits: {loaded} loaded, "
+                     f"{delivered} delivered, {returned} returned. Check the delivery and storage "
+                     "records and provide corrected counts, or explain what remains unknown. "
+                     "Do not infer a household count from this difference.")
 
     def defer(self, pid, eid, reason):
         reason = reason.strip()[:400] or "This source needs a contributor clarification."
@@ -402,13 +437,20 @@ class Store:
                 **{k: facts.get(k, {}).get("value") for k in ("loaded", "delivered", "returned", "households")}}
 
     def ask(self, pid, key, recipient, text):
-        allowed = {"transport_receipt": "finance", "delivery_count": "field"}
-        if allowed.get(key) != recipient:
+        allowed = {"transport_receipt": "finance", "supplies_receipt": "finance", "delivery_count": "field"}
+        reconciliation_key = bool(re.fullmatch(r"distribution_reconciliation:\d+-\d+-\d+", key))
+        if ("field" if reconciliation_key else allowed.get(key)) != recipient:
             raise Forbidden("The agent cannot choose an unregistered recipient or question type.")
         with self.db() as c:
             f = self.facts(c, pid)
-            if key == "transport_receipt" and ("transport" not in f or f["transport"]["value"]["supported"]):
-                return {"asked": False, "reason": "No missing transport receipt"}
+            if reconciliation_key:
+                current = self.reconciliation(f)
+                if not current or current[0] != key:
+                    return {"asked": False, "reason": "This arithmetic gap is no longer current"}
+            if key.endswith("_receipt"):
+                category = key.removesuffix("_receipt")
+                if category not in f or f[category]["value"]["supported"]:
+                    return {"asked": False, "reason": "No missing receipt in that category"}
             if key == "delivery_count" and "delivered" in f:
                 return {"asked": False, "reason": "The existing answer covers both donor reports"}
             exists = c.execute("SELECT id FROM questions WHERE project=? AND key=?", (pid, key)).fetchone()
@@ -428,10 +470,21 @@ class Store:
             summary = self.summary_from(f)
             revision = c.execute("SELECT revision FROM projects WHERE id=?", (pid,)).fetchone()[0]
             issues = [dict(r) for r in c.execute("SELECT id,note FROM evidence WHERE project=? AND status='review' ORDER BY id", (pid,))]
+            already_sent = c.execute("SELECT id FROM reports WHERE project=? AND status='delivered' AND revision=? ORDER BY version DESC LIMIT 1", (pid, revision)).fetchone()
+            if already_sent:
+                return {"report_id": already_sent["id"], "changed": False}
             payload = {"title": "Flood relief distribution — week one", "period": "September 2026 · Demonstration",
                        "summary": summary, "facts": f, "issues": issues,
                        "recipients": ["donor_a", "donor_b"], "synthetic": True,
                        "disclosure": "Synthetic scenario. Delivery counts are field-reported, not independently verified — a kit counted as delivered is not proof that a household received it. Receipt-supported spending is not proof of payment or impact."}
+            delivered = c.execute("SELECT * FROM reports WHERE project=? AND status='delivered' ORDER BY version DESC LIMIT 1", (pid,)).fetchone()
+            if delivered:
+                before = json.loads(delivered["payload"])["summary"]
+                payload["amends"] = {"version": delivered["version"], "hash": delivered["hash"]}
+                payload["changes"] = {k: {"before": before.get(k), "after": v} for k, v in summary.items() if before.get(k) != v}
+            else:
+                payload["amends"] = None
+                payload["changes"] = {}
             h = digest(pack(payload))
             last = c.execute("SELECT * FROM reports WHERE project=? ORDER BY version DESC LIMIT 1", (pid,)).fetchone()
             if last and last["hash"] == h and last["revision"] == revision:
@@ -477,7 +530,8 @@ class Store:
                     body = {"report_id": r["id"], "version": r["version"], "hash": r["hash"],
                             "summary": payload["summary"], "disclosure": payload["disclosure"],
                             "issues": [i["note"] for i in payload["issues"]], "title": payload["title"],
-                            "language": "ar" if recipient == "donor_b" else "en"}
+                            "language": "ar" if recipient == "donor_b" else "en",
+                            "amends": payload.get("amends"), "changes": payload.get("changes", {})}
                     result = c.execute("INSERT OR IGNORE INTO inbox(project,recipient,kind,subject,body,delivery_key,created) VALUES(?,?,?,?,?,?,?)",
                                        (pid, recipient, "report", f"Flood relief, week one · v{r['version']}", pack(body), key, time.time()))
                     if result.rowcount:

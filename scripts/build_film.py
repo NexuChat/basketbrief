@@ -14,10 +14,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 V2 = ROOT / "video2"
-FOOT = V2 / "raw" / "page@fd798e97545a6a87bf06d0742ca77a6f.webm"
 CARDS = V2 / "cards"
 WORK = V2 / "cut"
-OFFSET = 10.92          # recorder clock zero sits this far into the footage
 VOICE = "en-US-AndrewNeural"
 RATE = "+6%"
 GROUND = "0x11110f"
@@ -29,51 +27,65 @@ def dur(p):
     return float(sh("ffprobe", "-v", "error", "-show_entries", "format=duration",
                     "-of", "csv=p=0", str(p)).stdout.strip())
 
+
+recording = json.loads((V2 / "marks.json").read_text())
+FOOT = Path(recording["video"])
+MARK = {item["name"]: item["t"] for item in recording["marks"]}
+# Video capture begins before the recorder's clock. The pre-roll is exactly the
+# part of the file before the final recorder mark.
+OFFSET = max(0.0, dur(FOOT) - max(MARK.values()))
+
 # ── the cut ──────────────────────────────────────────────────────────────
 # kind: "shot" takes footage at mark time t for d seconds; "card" holds a still.
 # crop (x,y,w,h) composes that region onto the ground at `zoom`, centred.
 # Each beat's length is the longer of its planned hold and its narration.
 BEATS = [
-    dict(k="shot", t=75.6, d=5.0, crop=(400, 252, 1480, 452), zoom=1.26, fade=True,
-         vo="Four kits are missing, and BasketBrief will not sign the report until someone says where they went."),
+    dict(k="shot", t=MARK["amendment_changes"], d=5.2, crop=(370, 220, 1500, 560), zoom=1.20, fade=True,
+         vo="The report was already with both donors. Then the count changed. BasketBrief followed through."),
     dict(k="card", img="c-problem", d=6.0,
-         vo="Every week, a small aid group has to prove to its donors where the money went."),
+         vo="Small aid groups lose hours chasing receipts, reconciling field messages, and keeping donor reports consistent."),
     dict(k="card", img="c-who", d=7.4,
-         vo="Neighbourhood groups. Food banks. Small nonprofits. The receipts are with one person, the counts with another, and one receipt is always missing."),
-    dict(k="shot", t=4.0, d=4.4,
-         vo="BasketBrief is the agent that does the chasing."),
+         vo="Amal coordinates the work. The receipt is with Rana. The distribution count is with Sami. Two donors need the same evidence."),
+    dict(k="shot", t=MARK["idle_top"], d=4.4,
+         vo="BasketBrief is a Strands agent that owns the follow-up work."),
     dict(k="card", img="c-own", d=4.4,
          vo="Start with a receipt from your own wallet."),
     dict(k="still", img="own-panel", d=5.0,
          vo="The same deployed agent reads your paper on Amazon Bedrock."),
     dict(k="still", img="own-result", d=9.6,
-         vo="Vendor, invoice, line items, added up against the printed total — and the only numbers that could ever enter a ledger from it. Anything else is refused by the code, not by the prompt."),
+         vo="Nova Pro transcribes the paper, and code checks its line-item arithmetic. The original stays visible because transcription can be wrong."),
     dict(k="card", img="c-play", d=3.8,
          vo="Now the group's own week."),
     # a cropped view where the caption would contradict the line being spoken,
     # the full frame where the app's own caption says the same thing
-    dict(k="shot", t=27.0, d=5.2, crop=(400, 252, 1480, 452), zoom=1.26,
-         vo="One button runs the live agent. It finds the gap — sixty dollars with no receipt — and asks the one person who has it, once."),
-    dict(k="shot", t=31.5, d=6.4,
-         vo="She answers with a photograph, and Nova Pro reads it on AgentCore Runtime before the review even starts."),
-    dict(k="shot", t=46.5, d=5.0, crop=(400, 252, 1480, 452), zoom=1.26,
-         vo="Sixty dollars, printed on the paper. Every reported dollar now has a receipt behind it."),
-    dict(k="shot", t=50.0, d=5.4,
-         vo="One human decision, bound to one version and its content hash. Both donors receive it."),
-    dict(k="shot", t=58.2, d=5.2,
+    dict(k="shot", t=MARK["story_2"], d=5.2, crop=(400, 252, 1480, 452), zoom=1.26,
+         vo="It finds sixty dollars without a receipt and asks the person who can resolve it. One answer serves both reports."),
+    dict(k="shot", t=MARK["story_3"], d=6.4,
+         vo="Rana answers with a photograph. Nova Pro reads it through AgentCore Runtime before the review starts."),
+    dict(k="shot", t=MARK["story_4"], d=5.0, crop=(400, 252, 1480, 452), zoom=1.26,
+         vo="The transcription states sixty dollars. Every reported dollar now has receipt support."),
+    dict(k="shot", t=MARK["story_5"], d=5.4,
+         vo="Amal approves one exact version, bound to its content hash. Both donors receive immutable inbox snapshots."),
+    dict(k="shot", t=MARK["story_7"], d=5.2,
          vo="Then the count changes. Eighty-eight, not ninety-two."),
-    dict(k="shot", t=76.0, d=6.2, crop=(400, 252, 1480, 452), zoom=1.26,
-         vo="A hundred loaded. Eighty-eight out, eight back. Four unaccounted for."),
-    dict(k="still", img="gap", d=8.4, fit="width",
-         vo="And BasketBrief says what those four are: households that registered at the shelter and have no answer either way. That sentence is written by the reconciliation code, not by the model."),
+    dict(k="shot", t=MARK["story_8"], d=6.2, crop=(400, 252, 1480, 452), zoom=1.26,
+         vo="A hundred loaded. Eighty-eight delivered. Eight returned. Four unaccounted for, and the old approval is refused."),
+    dict(k="shot", t=MARK["story_9"], d=6.2,
+         vo="That discrepancy says nothing about households. BasketBrief asks Sami to check storage instead of inventing impact."),
+    dict(k="shot", t=MARK["story_10"], d=6.2,
+         vo="Sami confirms twelve returned. The figures reconcile, and both changes are shown before approval."),
+    dict(k="shot", t=MARK["donor_english"], d=5.4,
+         vo="Northstar keeps the original report and receives the amendment beside it."),
+    dict(k="shot", t=MARK["donor_arabic"], d=5.4,
+         vo="The Arabic donor receives the same approved evidence and exact changes."),
     dict(k="card", img="c-line", d=6.4,
          vo="The model decides what a source means. The code decides what is allowed."),
     dict(k="card", img="c-arch", d=8.6,
-         vo="Strands on Amazon Bedrock. The reader deployed on AgentCore Runtime, the team's vendor history in AgentCore Memory, and a follow-up gate that re-checks the model after its turn."),
+         vo="Strands and Nova Pro choose tools. Code owns facts, arithmetic, roles, follow-up delivery, versions, and approval validity. Runtime reads images; Memory carries advisory vendor history."),
     dict(k="card", img="c-measured", d=7.2,
-         vo="Seven identical runs. Fifty-three tests, twenty-eight of them adversarial. Three prompt injections refused."),
+         vo="Seventy-six tests pass, including thirty adversarial boundary cases. Three full browser journeys produced identical final reports without browser errors."),
     dict(k="card", img="c-end", d=6.6, fadeout=True,
-         vo="BasketBrief. It chases the evidence, and it will not sign off on four households it cannot account for."),
+         vo="The scenario is fictional. We measured system behavior, not human time or aid impact. BasketBrief: the report changed, and the work still got finished."),
 ]
 
 
@@ -82,8 +94,7 @@ def narrate():
     out.mkdir(parents=True, exist_ok=True)
     for i, b in enumerate(BEATS, 1):
         f = out / f"{i:02d}.mp3"
-        if not f.exists():
-            sh("edge-tts", "--voice", VOICE, "--rate", RATE, "--text", b["vo"], "--write-media", str(f))
+        sh("edge-tts", "--voice", VOICE, "--rate", RATE, "--text", b["vo"], "--write-media", str(f))
         b["vo_len"] = dur(f)
         b["vo_file"] = f
         # 0.45s of air before the line, 0.7s after, or the planned hold — whichever is longer

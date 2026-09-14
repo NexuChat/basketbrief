@@ -6,6 +6,7 @@ import os
 import re
 import time
 
+from .grounding import field_values
 from .store import Conflict, Forbidden, Store
 
 SYSTEM = """You are BasketBrief, helping a neighbourhood mutual-aid group finish two donor reports after a flood.
@@ -20,8 +21,9 @@ Supplies receipts describe supplies spending; use category "supplies" for them a
 support; a transport RECEIPT supports it. USD only. Never add an invented exchange rate.
 Amounts must appear in the source. A missing receipt cannot become a receipt by wishful thinking.
 Loaded kits, delivered kits, returned kits and unique households differ. Leave unmentioned
-counts null. When the counts do not add up, say what it means for people: kits that are neither
-delivered nor returned are households that registered at the shelter and have no answer either way. Returned inventory is not a refund. Never infer household counts from kits.
+counts null. When the counts do not add up, report only the kit discrepancy and ask for
+clarification. Never invent affected households, registrations, or a one-kit-per-family mapping.
+Returned inventory is not a refund. Never infer household counts from kits.
 When an explicit correction arrives, record ONLY the new counts it states, with its own evidence id;
 do not rerecord older sources and never derive a number the correction does not state.
 If the corrected counts no longer add up, record them anyway and move on: the system surfaces
@@ -32,6 +34,9 @@ Then inspect_workspace. If the transport receipt is missing, ask finance for it 
 ask_contributor(key='transport_receipt',recipient='finance'). Ask field for delivery_count only if
 that count is absent. One question serves both reports. Existing unresolved questions must not
 be asked again. If a person says they cannot find evidence, defer their reply; keep the unknown visible.
+Inspect unfollowed_gaps too: for an arithmetic mismatch, ask field using the exact
+reconciliation key returned by inspect_workspace. Follow up until the contributor clarifies
+or explicitly says they cannot establish it. A single reply serves both donor reports.
 Finally prepare_donor_reports. You cannot approve or deliver reports. Those require the coordinator.
 Be concise, warm, and specific. Never claim money saved, physical verification, or actual NGO use.
 You must use the tools; a written summary alone does not complete the task."""
@@ -80,11 +85,11 @@ def make_tools(store: Store, pid: str, uploads_dir=None):
     def inspect_workspace() -> str:
         """Inspect accepted facts, current amounts, open/unresolved questions and new evidence count."""
         state = store.state(pid, "coordinator")
-        return json.dumps({k:state[k] for k in ("summary", "facts", "questions")}, ensure_ascii=False)
+        return json.dumps({**{k:state[k] for k in ("summary", "facts", "questions")}, "unfollowed_gaps": store.unfollowed_gaps(pid)}, ensure_ascii=False)
 
     @tool
     def ask_contributor(key: str, recipient: str, message: str) -> dict:
-        """Deliver one question to a registered contributor inbox. Keys: transport_receipt→finance, delivery_count→field. Repeated requests are prevented."""
+        """Deliver one question to a registered contributor inbox. Keys: transport_receipt/supplies_receipt→finance, delivery_count→field, and the current distribution_reconciliation:<source ids>→field as returned by inspect_workspace. Repeated requests are prevented."""
         return call("ask_contributor", store.ask, pid, key, recipient, message)
 
     @tool
@@ -94,6 +99,34 @@ def make_tools(store: Store, pid: str, uploads_dir=None):
 
     return [read_pending_evidence, record_expense, record_distribution, defer_evidence,
             inspect_workspace, ask_contributor, prepare_donor_reports]
+
+
+def record_unambiguous_question_replies(store, pid):
+    """Record clearly labelled counts in replies before the model sees them.
+
+    A contributor responding to a scoped question may use a terse field/value form.
+    If every mentioned field has exactly one positive interpretation, the same
+    deterministic source checks used by the tool can record it. Ambiguous prose
+    remains pending for the agent or a human to review.
+    """
+    recorded = []
+    for evidence in store.pending(pid):
+        if evidence["actor"] != "field" or evidence["question_id"] is None:
+            continue
+        candidates = {field: field_values(evidence["text"], field)
+                      for field in ("loaded", "delivered", "returned", "households")}
+        if not any(candidates.values()) or any(len(values) > 1 for values in candidates.values()):
+            continue
+        values = {field: next(iter(matches)) for field, matches in candidates.items() if matches}
+        try:
+            result = store.record_distribution(pid, evidence["id"], **values)
+        except (Conflict, Forbidden):
+            continue
+        if result.get("recorded"):
+            store.log(pid, "gate", "Recorded an unambiguous field reply",
+                      {"evidence_id": evidence["id"], "fields": sorted(values)})
+            recorded.append(evidence["id"])
+    return recorded
 
 
 def local_process(store, pid):
@@ -129,6 +162,8 @@ def local_process(store, pid):
             store.defer(pid, e["id"], str(exc))
     store.ask(pid, "transport_receipt", "finance", "Rana, could you share the receipt for the USD 60 truck hire? One answer will complete both donor reports.")
     store.ask(pid, "delivery_count", "field", "Sami, how many kits were actually delivered, and how many returned? Please distinguish these from the number loaded.")
+    for key, recipient, message in store.unfollowed_gaps(pid):
+        store.ask(pid, key, recipient, message)
     store.prepare(pid)
 
 
@@ -151,6 +186,7 @@ def process_project(store, pid, engine, uploads_dir=None):
         return
     if engine != "bedrock":
         raise Conflict("Unsupported agent engine.")
+    record_unambiguous_question_replies(store, pid)
     from strands import Agent
     from strands.models import BedrockModel
     from strands.tools.executors import SequentialToolExecutor
@@ -177,14 +213,17 @@ def process_project(store, pid, engine, uploads_dir=None):
         result = agent("There are still unprocessed sources. Read them and record or defer EACH one, then prepare the reports.")
     if store.pending(pid):
         raise Conflict("The agent left evidence unprocessed. Retry the review.")
-    # Following up on a known gap is the product's promise, so it is checked in code and
-    # handed back to the agent once. The agent still chooses the wording and the recipient;
-    # the system only guarantees that an unsupported amount is never left unasked.
+    # The model chooses the follow-up wording. Deterministic delivery closes any
+    # remaining known gap after one repair turn, using the same scoped tool policy.
+    gaps = store.unfollowed_gaps(pid)
+    if gaps:
+        store.log(pid, "gate", "Known gaps still need follow-up", {"keys": [g[0] for g in gaps]})
+        result = agent("Ask each of these current gaps using its exact key and recipient, then prepare reports: "
+                       + json.dumps(gaps))
     for key, recipient, what in store.unfollowed_gaps(pid):
-        store.log(pid, "gate", "A gap was still unasked after the review", {"key": key})
-        result = agent(f"{what} No question about it is open. Ask the responsible contributor now with "
-                       f"ask_contributor(key='{key}', recipient='{recipient}'), then prepare the reports again.")
-        break
+        store.ask(pid, key, recipient, what)
+        store.log(pid, "gate", "Delivered a required follow-up after the model turn", {"key": key})
+    store.prepare(pid)
     state = store.state(pid, "coordinator")
     if not state["report"] or state["report"]["revision"] != state["project"]["revision"]:
         raise Conflict("The agent has not prepared a report from the latest evidence. Retry.")

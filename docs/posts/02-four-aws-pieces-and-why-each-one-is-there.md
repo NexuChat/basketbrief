@@ -8,14 +8,14 @@ One `Agent`, seven tools, `BedrockModel`, `temperature=0`, a `SequentialToolExec
 
 The division of labour is the whole design:
 
-- **The model decides** what a source means, what is missing, who to ask, and how to word both the question and the report.
-- **The code decides** what is allowed: an amount must appear in its source; loaded, delivered, returned and unique households are four different facts and never collapse into one; contributor text is untrusted data, so an instruction inside a field message is evidence, not a command.
+- **The model decides** what a source means, what is missing, who to ask, and how to word a question.
+- **The code decides** what is allowed: a stated total or currency-associated amount must appear in its source; loaded, delivered, returned and unique households are four different facts and never collapse into one; contributor text is untrusted data, so an instruction inside a field message is evidence, not a command. Report bodies come from deterministic templates over the accepted facts.
 
-A cycle takes 4–9 seconds and 8–12k input tokens. Seven consecutive end-to-end journeys produced identical figures.
+In the final release check, three consecutive browser-driven journeys through the full two-report amendment flow produced identical figures in 63–66 seconds each.
 
 ## 2. Amazon Nova Pro — the part that reads a photograph
 
-Volunteers do not type receipts. They photograph them. So before any review starts, every attached image is transcribed by Nova Pro, and **the transcription becomes the source text** — which means the "amount must appear in its source" guard now applies to what was actually printed on the paper.
+Volunteers do not type receipts. They photograph them. So before any review starts, every attached image is transcribed by Nova Pro, and **the transcription becomes the source text**. The app validates that transcription and shows the original image for human comparison; it does not claim that OCR proves what the paper says.
 
 I measured this before designing around it, and the measurement changed the design:
 
