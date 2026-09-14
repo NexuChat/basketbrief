@@ -65,3 +65,11 @@ OCR can still fail, including on Arabic documents. Gmail app-password import was
 The next validation is a supervised trial with a relief coordinator, measuring task completion, corrections caught and time spent reviewing. Provider OAuth activation and an independent security review follow before broader use.
 
 Built during this hackathon with AI coding assistance. Persistence/channel patterns were reused from an abandoned entry in the same competition; the domain-specific evidence, reconciliation, vision and approval workflows were implemented here. Public source: MIT license.
+
+## Build notes on AWS Builder Center
+
+Three articles trace the implementation and lessons from earlier revisions. Current behavior and verification limits are recorded in the repository's evaluation notes.
+
+- [Agents for Humans: deciding where a model is allowed to remember](https://builder.aws.com/content/3JKJsDJK8k4xdjiXgjw1C7APCZ9)
+- [Agents for Humans: four AWS pieces, and why each one is there](https://builder.aws.com/content/3JKIVfEIXxflSCjzSGeE382YQOd)
+- [Agents for Humans: the test that found our own defect](https://builder.aws.com/content/3JKKRcQ2xoqyBQZKEVwHTpAFOfD)
