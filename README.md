@@ -102,7 +102,7 @@ docs/          architecture, submission text, evaluation notes
 
 Seven consecutive end-to-end journeys, three of them instrumented, produced **identical outcomes at every step**: 27.4 s wall clock, three agent cycles, one question asked exactly once, the photograph closing the gap, `$1,260` supported and `$0` undocumented, `88` delivered after the correction, two donor deliveries with receipts, and **HTTP 409** when the approval bound to the delivered version was tried again. Zero streaming errors.
 
-`tests/test_adversarial.py` puts 24 deliberate defects in front of the guards — invented amounts, counts absent from their source, three prompt injections inside field evidence, a receipt whose lines disagree with its total, a household count sitting next to a denial. All pass, and one of them **found a real defect** in our own household guard before a judge could.
+`tests/test_adversarial.py` puts 29 deliberate defects in front of the guards — invented amounts, counts absent from their source, three prompt injections inside field evidence, a receipt whose lines disagree with its total, a household count sitting next to a denial. All pass, and one of them **found a real defect** in our own household guard before a judge could.
 
 Full numbers, method and the things we deliberately did not measure: [`docs/EVALUATION.md`](docs/EVALUATION.md).
 

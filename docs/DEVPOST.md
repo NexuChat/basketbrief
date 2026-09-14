@@ -63,7 +63,7 @@ Role-scoped capability links give every contributor and donor their own workspac
 
 Seven consecutive full journeys against the deployed app produced identical outcomes at every step — 27.4 s wall clock, one question asked exactly once, `$1,260` supported and `$0` undocumented, `88` delivered after the correction, two donor deliveries with receipts, and **HTTP 409** when the stale approval was tried again.
 
-`tests/test_adversarial.py` puts twenty-eight deliberate defects in front of the guards — invented amounts, three prompt injections inside field evidence, a receipt whose lines disagree with its printed total, a household count sitting next to a denial. All pass, and one of them **found a real defect in our own guard** before a judge could.
+`tests/test_adversarial.py` puts twenty-nine deliberate defects in front of the guards — invented amounts, three prompt injections inside field evidence, a receipt whose lines disagree with its printed total, a household count sitting next to a denial. All pass, and one of them **found a real defect in our own guard** before a judge could.
 
 The whole thing also runs with **no AWS credentials at all** — a clearly labelled local parser stands in — so anyone can clone it and watch the journey in one command.
 

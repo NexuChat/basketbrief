@@ -75,6 +75,6 @@ If you are shipping an agent this week, write the cases that are supposed to fai
 
 ---
 
-The suite is `tests/test_adversarial.py` in **github.com/NexuChat/basketbrief** (MIT). All twenty-eight cases and the measured journey numbers are written up in `docs/EVALUATION.md`, including a section on what we deliberately did **not** measure. Live demo: **basketbrief.mlki.app**.
+The suite is `tests/test_adversarial.py` in **github.com/NexuChat/basketbrief** (MIT). All twenty-nine cases the suite now holds, and the measured journey numbers, are written up in `docs/EVALUATION.md`, including a section on what we deliberately did **not** measure. Live demo: **basketbrief.mlki.app**.
 
 Built for the Agents for Humans Hackathon, Good Neighbor Agents track.
