@@ -33,7 +33,6 @@ PROMPT = (
 )
 
 MODEL = os.environ.get("BASKETBRIEF_VISION_MODEL", "us.amazon.nova-pro-v1:0")
-RUNTIME_ARN = os.environ.get("BASKETBRIEF_RUNTIME_ARN", "")
 
 _local = threading.local()
 
@@ -60,49 +59,6 @@ def _decimal(value) -> Decimal | None:
         return None
 
 
-def read_receipt_on_runtime(image_bytes: bytes) -> dict | None:
-    """Ask the reader deployed on Amazon Bedrock AgentCore Runtime.
-
-    Reading a photograph is the one genuinely stateless step in BasketBrief, so it
-    is the step that belongs in a managed runtime rather than in the web process.
-    Returns None when no runtime is configured or it does not answer, and the
-    caller falls back to reading in-process — a managed dependency should not be
-    able to stop a coordinator finishing her evening.
-    """
-    if not RUNTIME_ARN:
-        return None
-    import base64, json as _json, uuid
-    try:
-        client = getattr(_local, "runtime", None)
-        if client is None:
-            import boto3
-            from botocore.config import Config
-            client = _local.runtime = boto3.Session(
-                region_name=os.environ.get("AWS_REGION", "us-east-1")
-            ).client("bedrock-agentcore", config=Config(
-                read_timeout=40, connect_timeout=8, retries={"max_attempts": 1}))
-        session = (uuid.uuid4().hex + uuid.uuid4().hex)[:40]
-        answer = client.invoke_agent_runtime(
-            agentRuntimeArn=RUNTIME_ARN, runtimeSessionId=session,
-            payload=_json.dumps({"image_b64": base64.b64encode(image_bytes).decode()}).encode())
-        data = _json.loads(answer["response"].read().decode())
-    except Exception:
-        return None
-    if not isinstance(data, dict) or "ok" not in data:
-        return None
-    # the runtime returns decimals as strings; bring them back to Decimal here so
-    # every downstream check sees exactly what an in-process read would produce
-    for key in ("stated_total", "summed_total"):
-        if data.get(key) is not None:
-            data[key] = _decimal(data[key])
-    for item in data.get("items", []):
-        for key in ("qty", "unit_price", "line_total"):
-            if item.get(key) is not None:
-                item[key] = _decimal(item[key])
-    data["where"] = "agentcore-runtime"
-    return data
-
-
 def read_receipt(image_bytes: bytes, client=None) -> dict:
     """Transcribe a receipt image. Returns the fields, the arithmetic check, and the raw text.
 
@@ -110,9 +66,6 @@ def read_receipt(image_bytes: bytes, client=None) -> dict:
     nonsense produces an empty, explicitly low-confidence reading instead.
     """
     if client is None:
-        remote = read_receipt_on_runtime(image_bytes)
-        if remote is not None:
-            return remote
         client = _client()
 
     response = client.converse(
@@ -170,7 +123,6 @@ def read_receipt(image_bytes: bytes, client=None) -> dict:
         "mismatch": mismatch,
         "confidence": float(confidence) if confidence is not None else None,
         "model": MODEL,
-        "where": "in-process",
     }
 
 

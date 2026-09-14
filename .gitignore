@@ -9,3 +9,8 @@ video/main.mp4
 video/end.mp4
 video/video_only.mp4
 video/*.txt
+runtime/agentcore/.cache/
+runtime/agentcore/.cli/
+runtime/**/node_modules/
+runtime/**/.venv/
+runtime/**/cdk.out/

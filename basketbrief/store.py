@@ -341,6 +341,7 @@ class Store:
                 "total": str(reading.get("stated_total")) if reading.get("stated_total") is not None else None,
                 "currency": reading.get("currency"), "items": len(reading.get("items") or []),
                 "confidence": reading.get("confidence"),
+                "read_on": reading.get("where", "in-process"),
                 **({"mismatch": reading["mismatch"]} if reading.get("mismatch") else {}),
                 **({"vendor_new": True} if ledger.get("known") is False else {}),
                 **({"vendor_known": True} if ledger.get("known") is True else {})})
