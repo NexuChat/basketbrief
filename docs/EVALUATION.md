@@ -98,7 +98,41 @@ The reader runs on **Amazon Bedrock AgentCore Runtime**, deployed from `runtime/
 | The memory service unreachable | the review still completes | ✅ `known: None`, error recorded, no failure |
 | No memory configured | silent | ✅ silent |
 
-## 6. The work the agent removes, counted rather than guessed
+## 6. Is the problem real, outside our own story?
+
+The scenario in the demo is fictional and labelled as such. The burden it depicts is
+not. Two sources we read ourselves, neither of them a vendor:
+
+- **Stanford Social Innovation Review**, Ann Goggins Gregory and Don Howard, *The
+  Nonprofit Starvation Cycle*, Fall 2009 —
+  [ssir.org](https://ssir.org/articles/entry/the_nonprofit_starvation_cycle):
+  *"when one Bridgespan client added up the hours that staff members spent on
+  reporting requirements for a particular government grant, the organization found
+  that it was spending about 31 percent of the value of the grant on its
+  administration. Yet the funder had specified that the nonprofit spend only 13
+  percent of the grant on indirect costs."*
+- **Center for Effective Philanthropy**, Alice Mei and Nina Groleger, *Reimagining
+  Reporting, Part 1: Insights From the Field*, 11 November 2025 —
+  [cep.org](https://cep.org/blog/reimagining-reporting-part-1-insights-from-the-field/):
+  reporting a 2023 study in which nonprofits reduced the time spent on **a single
+  funder's** reporting requirements from eight hours to six.
+
+Read together: the work is counted in **hours per funder**, and the share of a grant
+it consumes can be more than twice what the funder allowed for it. Our demo has two
+donors, which is the smallest number at which reports can contradict each other.
+
+**What these sources do not establish.** They are about grant reporting in the
+United States philanthropic sector; they are not about neighbourhood flood relief,
+they say nothing about our product, and nobody in them has used it. They establish
+that the burden is real and measured in hours — nothing further. We deliberately do
+not multiply them by anything to produce a saving.
+
+A volunteer treasurer's public account of chasing missing receipts, and a
+practitioners' thread on who actually writes grant reports, were collected during
+research but **are not cited here**: we could not retrieve either source to verify
+it ourselves, and an unverified citation is worth less than none.
+
+## 7. The work the agent removes, counted rather than guessed
 
 Reproduce with `python scripts/baseline.py`.
 
@@ -137,7 +171,7 @@ rather than absorbed, and that the approval bound to the superseded version is
 refused rather than silently reused. Those are the reasons the product exists,
 and neither is an efficiency.
 
-## 7. What we did **not** measure
+## 8. What we did **not** measure
 
 - **No timed human baseline.** Section 6 counts acts, not minutes. This project makes **no claim of hours or money saved**.
 - **No real organisation, no pilot, no donor.** Every person, receipt, figure and organisation in the demo is fictional and labelled as such inside the app.
