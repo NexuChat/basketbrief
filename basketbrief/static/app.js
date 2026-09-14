@@ -17,6 +17,73 @@ function sourceCards(evidence) {
   if (!evidence.length) return '<div class="empty-state"><p>Your evidence will appear here.</p></div>';
   return '<div class="evidence-list">' + evidence.map(e => `<article class="evidence-card"><div class="source-icon ${e.kind==='expense_claim'?'warning':''}" aria-hidden="true">${e.actor==='field'?'≋':'▤'}</div><div class="source-body"><div class="source-header"><h3>${esc(title(e))}</h3><span class="badge ${e.status==='review'?'amber':e.status==='pending'?'neutral':''}">${e.status==='accepted'?'✓ Linked':e.status==='pending'?'Reviewing':'Needs review'}</span></div><p class="source-meta">${esc(names[e.actor])} · Source ${ordinal.get(e.id) ?? e.id} · ${esc(e.kind.replace('_',' '))}</p><p class="source-excerpt">${esc(e.text)}</p><button class="text-button" data-source="${e.id}">View original source ↗</button></div></article>`).join('') + '</div>';
 }
+function statusStrip(s) {
+  // A workbench, not a landing page: one line of state, the figures inline,
+  // and the work itself given the whole frame underneath.
+  const st = storyline(s);
+  const f = s.summary, gap = Number(f.unsupported || 0);
+  const known = v => (v === null || v === undefined) ? '—' : v;
+  const fig = (label, value, sub, mod = '') =>
+    `<div class="figure ${mod}"><span class="figure-label">${label}</span>` +
+    `<b class="figure-value">${value}</b><span class="figure-sub">${sub}</span></div>`;
+  return `<section class="strip ${st.tone}" id="overview">
+    <div class="strip-head">
+      <div class="eyebrow">${st.eyebrow}</div>
+      <h1>${st.head.replace(/<br>/g, ' ')}</h1>
+      <p>${st.body}</p>
+    </div>
+    <div class="figures">
+      ${fig('Baskets delivered', known(f.delivered), known(f.delivered) === '—' ? 'not yet reported'
+            : `of ${known(f.loaded)} loaded · ${known(f.returned)} returned`)}
+      ${fig('Receipt-supported', usd(f.supported), `of ${usd(f.reported)} reported`)}
+      ${fig('Needs a receipt', gap > 0 ? usd(gap) : (Number(f.reported) ? '$0' : '—'),
+            gap > 0 ? 'reported, not documented' : 'every amount documented', gap > 0 ? 'is-gap' : '')}
+    </div>
+  </section>`;
+}
+
+function liveTimeline(s) {
+  const kinds = {tool:'tool', fact:'recorded', request:'recorded', question:'asked', report:'drafted',
+                 approval:'approved', delivery:'delivered', guardrail:'blocked', review:'unresolved',
+                 correction:'correction', vision:'read image', complete:'done', agent:'cycle',
+                 evidence:'new source', error:'error', gate:'gate', reply:'reply', workspace:'start'};
+  const rows = s.events.slice(0, 60).reverse().map(e => {
+    const d = e.detail && typeof e.detail === 'object' ? e.detail : {};
+    let extra = '';
+    if (d.amount) extra = `${d.amount} ${d.supported === false ? '· unsupported' : '· receipt-backed'}`;
+    else if (d.delivered !== undefined || d.loaded !== undefined) extra = Object.entries(d)
+      .filter(([k, v]) => ['loaded','delivered','returned','households'].includes(k) && v !== null)
+      .map(([k, v]) => `${k} ${v}`).join(' · ');
+    else if (d.seconds) extra = `${d.seconds}s${d.input_tokens ? ' · ' + (d.input_tokens/1000).toFixed(1) + 'k in' : ''}`;
+    else if (d.model) extra = String(d.model);
+    else if (d.reason) extra = String(d.reason);
+    else if (d.text) extra = String(d.text);
+    return `<div class="live-row ${e.kind}"><time>${new Date(e.created*1000).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</time>` +
+      `<span class="live-kind">${esc(kinds[e.kind] || e.kind)}</span>` +
+      `<span class="live-body"><b>${esc(e.title)}</b>${extra ? `<em>${esc(extra).slice(0,150)}</em>` : ''}</span></div>`;
+  }).join('');
+  return `<section class="panel live" aria-label="What the agent did">
+    <div class="panel-head"><h2>The agent, step by step.</h2>
+      <span class="count">${s.busy ? '<span class="spinner"></span> running' : s.events.length + ' steps'}</span></div>
+    <div class="live-list" id="live-list">${rows || '<div class="empty-state"><p>Waiting for the first cycle.</p></div>'}</div>
+  </section>`;
+}
+
+function statusBar(s) {
+  const last = s.events.find(e => e.kind === 'complete');
+  const d = last && typeof last.detail === 'object' ? last.detail : {};
+  const cell = (k, v) => `<span><i>${k}</i>${esc(String(v))}</span>`;
+  return `<div class="status-bar" role="status">
+    <span class="${s.busy ? 'bar-run' : 'bar-idle'}"><span class="${s.busy ? 'spinner' : 'status-dot'}"></span>${s.busy ? 'reviewing' : 'idle'}</span>
+    ${cell('engine', s.project.engine === 'bedrock' ? 'strands · bedrock' : 'local parser')}
+    ${cell('model', d.model || (s.project.engine === 'bedrock' ? 'nova-pro' : 'none'))}
+    ${cell('revision', 'r' + s.project.revision)}
+    ${cell('last cycle', d.seconds ? d.seconds + 's' : '—')}
+    ${cell('sources', s.evidence.length)}
+    ${cell('deliveries', s.receipts.length)}
+  </div>`;
+}
+
 function storyline(s) {
   // Every word here is derived from live state. Nothing congratulates the team early.
   const open = s.questions.filter(q => q.status === 'open');
@@ -105,8 +172,11 @@ function ackBox(r) {
 function donors(s) { const delivered=s.report?.status==='delivered'; return `<section class="donors" id="reports"><div class="section-line"><h2 class="section-title">Two reports. One effort.</h2></div>${[['donor_a','✳','Northstar Foundation','English · Financial & delivery brief'],['donor_b','◌','Community Giving Circle','العربية · ملخص التوزيع والإنفاق']].map(([r,icon,name,desc])=>`<article class="donor-card"><div class="donor-mark ${r==='donor_b'?'blue':''}" aria-hidden="true">${icon}</div><div><h3>${name}</h3><p>${desc}</p>${delivered?`<button class="text-button" data-role="${r}">Open delivered report ↗</button>`:''}</div><span class="badge ${delivered?'':'neutral'}">${delivered?'✓ Delivered':'Draft'}</span></article>`).join('')}<p class="form-hint">Same approved evidence. Two languages. No invented impact claims.</p></section>`; }
 function trace(s) { return `<details class="trace" id="trace"><summary><span>Behind the brief · ${s.events.length} recent recorded steps</span><span>${s.project.engine==='bedrock'?'Strands + Amazon Bedrock':'Local test parser · No AI'}</span></summary><div class="trace-list">${s.events.map(e=>`<div class="trace-event"><time>${new Date(e.created*1000).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</time><div><span class="trace-kind">${esc(e.kind)}</span>${esc(e.title)}<p>${esc(e.detail.reason || e.detail.text || (e.kind==='complete'?JSON.stringify(e.detail):e.detail.hash?'Snapshot '+e.detail.hash.slice(0,18)+'…':e.detail.receipt||''))}</p></div></div>`).join('')}</div></details>`; }
 function coordinator(s) {
-  const st = storyline(s);
-  return hero(st.eyebrow, st.head, st.body, s, st.tone) + metrics(s.summary, s.busy) + `<div class="workspace-grid"><section class="panel" id="sources"><div class="panel-head"><h2>The story, with sources.</h2><span class="count">${s.evidence.length} sources</span></div>${sourceCards(s.evidence)}<p class="panel-foot">Every figure links back to the source that stated it. A reported delivery is not independent proof of impact.</p></section>${nextStep(s)}</div>` + donors(s) + trace(s);
+  return statusStrip(s) + `<div class="bench">
+      <section class="panel" id="sources"><div class="panel-head"><h2>Evidence.</h2><span class="count">${s.evidence.length} sources</span></div>${sourceCards(s.evidence)}<p class="panel-foot">Every figure links back to the source that stated it. A reported delivery is not independent proof of impact.</p></section>
+      ${liveTimeline(s)}
+      <div class="bench-right">${nextStep(s)}${donors(s)}</div>
+    </div>` + statusBar(s);
 }
 function contributor(s) {
  const finance=role==='finance', questions=s.questions.filter(q=>q.status==='open');
@@ -122,6 +192,7 @@ function render(s) {
  $('#content').innerHTML=role==='coordinator'?coordinator(s):role.startsWith('donor')?donor(s):contributor(s);
  for(const [id,v] of Object.entries(saved)) { const el=document.getElementById(id); if(el){el.value=v.value;el.checked=v.checked;} }
  if(traceOpen && $('#trace')) $('#trace').open=true;
+ const live=$('#live-list'); if(live) live.scrollTop=live.scrollHeight;
  if(focusId && document.getElementById(focusId)){const el=document.getElementById(focusId);el.focus({preventScroll:true});if(typeof el.setSelectionRange==='function'&&selection!=null)el.setSelectionRange(selection,selection);}
 }
 async function refresh(force=false) {
