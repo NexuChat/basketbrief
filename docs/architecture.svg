@@ -1,9 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1680" height="1040" viewBox="0 0 1680 1040" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="1680" height="1120" viewBox="0 0 1680 1120" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif">
   <defs>
     <marker id="a" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#2f4438"/></marker>
     <marker id="g" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#9a5c20"/></marker>
   </defs>
-  <rect width="1680" height="1040" fill="#f8f8f2"/>
+  <rect width="1680" height="1120" fill="#f8f8f2"/>
 
   <text x="56" y="58" font-size="30" font-weight="700" fill="#193e33" font-family="Georgia, serif">BasketBrief — architecture</text>
   <text x="56" y="88" font-size="16" fill="#5c6a5c">A Strands agent chases the missing evidence, recalculates in code, and delivers an approved report to each donor. The model interprets; the code decides what is allowed.</text>
@@ -99,9 +99,15 @@
   <text x="1100" y="690" font-size="14" fill="#5c6a5c">can open only what was delivered to them — never another donor's copy,</text>
   <text x="1100" y="710" font-size="14" fill="#5c6a5c">and never a later draft that silently replaced what they read.</text>
 
-  <rect x="1078" y="766" width="546" height="78" rx="14" fill="#eef4e4" stroke="#b9cfa6" stroke-width="2"/>
-  <text x="1100" y="798" font-size="17" font-weight="700" fill="#2f5c3c">Live demo</text>
-  <text x="1100" y="822" font-size="13.5" fill="#4a6a4d">basketbrief.mlki.app · FastAPI + Cloudflare Tunnel · a fresh fictional workspace per visitor</text>
+  <rect x="1078" y="766" width="546" height="112" rx="14" fill="#eef4e4" stroke="#b9cfa6" stroke-width="2"/>
+  <text x="1100" y="798" font-size="17" font-weight="700" fill="#2f5c3c">AgentCore Memory — the vendor ledger</text>
+  <text x="1100" y="822" font-size="13.5" fill="#4a6a4d">A workspace lives for one distribution; a team does not. Vendors this team has</text>
+  <text x="1100" y="842" font-size="13.5" fill="#4a6a4d">bought from before outlive every report here, so a vendor nobody has seen is a</text>
+  <text x="1100" y="862" font-size="13.5" fill="#4a6a4d">review hint before it reaches a donor. Advisory: it never changes a number.</text>
+
+  <rect x="1078" y="898" width="546" height="60" rx="14" fill="#fffefb" stroke="#dfe4d6" stroke-width="2"/>
+  <text x="1100" y="924" font-size="16" font-weight="700" fill="#193e33">Live demo</text>
+  <text x="1100" y="946" font-size="13" fill="#5c6a5c">basketbrief.mlki.app · FastAPI + Cloudflare Tunnel · a fresh workspace per visitor</text>
 
   <!-- arrows -->
   <g stroke="#2f4438" stroke-width="2.4" fill="none" marker-end="url(#a)">
@@ -117,8 +123,8 @@
   <text x="420" y="906" font-size="13" fill="#8a5a00">a correction re-enters as new evidence: facts move, dependent reports redraft, the old approval stops working</text>
   
 
-  <text x="56" y="944" font-size="15" font-weight="700" fill="#193e33">One cycle, end to end</text>
-  <text x="56" y="968" font-size="14" fill="#5c6a5c">new evidence → photographs transcribed by Nova Pro → agent reads, records or defers each source → inspects the workspace → asks the one person who has the gap → drafts both donor reports</text>
-  <text x="56" y="990" font-size="14" fill="#5c6a5c">→ follow-up gate verifies nothing was left unasked → coordinator approves one exact version → delivered to each donor inbox with a receipt → a later correction starts the cycle again</text>
-  <text x="56" y="1014" font-size="12.5" fill="#8a9487">AWS services used: Amazon Bedrock (Nova Pro, text and vision). All organisations, people, receipts and figures in the demo are fictional. Agents for Humans Hackathon · Good Neighbor Agents.</text>
+  <text x="56" y="1024" font-size="15" font-weight="700" fill="#193e33">One cycle, end to end</text>
+  <text x="56" y="1048" font-size="14" fill="#5c6a5c">new evidence → photographs transcribed by Nova Pro → agent reads, records or defers each source → inspects the workspace → asks the one person who has the gap → drafts both donor reports</text>
+  <text x="56" y="1070" font-size="14" fill="#5c6a5c">→ follow-up gate verifies nothing was left unasked → coordinator approves one exact version → delivered to each donor inbox with a receipt → a later correction starts the cycle again</text>
+  <text x="56" y="1094" font-size="12.5" fill="#8a9487">AWS services used: Amazon Bedrock (Nova Pro, text and vision) and Amazon Bedrock AgentCore Memory (the vendor ledger). All organisations, people, receipts and figures in the demo are fictional. Agents for Humans Hackathon · Good Neighbor Agents.</text>
 </svg>

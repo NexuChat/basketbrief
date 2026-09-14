@@ -140,7 +140,7 @@ function statusStrip(s) {
 function liveTimeline(s) {
   const kinds = {tool:'tool', fact:'recorded', request:'recorded', question:'asked', report:'drafted',
                  approval:'approved', delivery:'delivered', guardrail:'blocked', review:'unresolved',
-                 correction:'correction', vision:'read image', complete:'done', agent:'cycle',
+                 correction:'correction', vision:'read image', ledger:'ledger', complete:'done', agent:'cycle',
                  evidence:'new source', error:'error', gate:'gate', reply:'reply', workspace:'start'};
   const rows = s.events.slice(0, 60).reverse().map(e => {
     const d = e.detail && typeof e.detail === 'object' ? e.detail : {};
@@ -150,6 +150,8 @@ function liveTimeline(s) {
       .filter(([k, v]) => ['loaded','delivered','returned','households'].includes(k) && v !== null)
       .map(([k, v]) => `${k} ${v}`).join(' · ');
     else if (d.seconds) extra = `${d.seconds}s${d.input_tokens ? ' · ' + (d.input_tokens/1000).toFixed(1) + 'k in' : ''}`;
+    else if (d.vendor_new) extra = 'vendor not seen before in this team\u2019s history';
+    else if (d.vendor_known) extra = 'vendor seen in a previous distribution';
     else if (d.model) extra = String(d.model);
     else if (d.reason) extra = String(d.reason);
     else if (d.text) extra = String(d.text);

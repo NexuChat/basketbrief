@@ -73,7 +73,20 @@ Measured on the project's own rendered receipts before any of this was designed 
 
 That third row is why the prompt asks for Latin-script text and returns `null` rather than guessing, and why the transcription — not the picture — becomes the source text that the amount guard checks. This is a measured limitation of one model on our fixtures, not a claim about OCR in general.
 
-## 4. What we did **not** measure
+## 4. The vendor ledger
+
+`tests/test_adversarial.py` cases 25–28, and one live check against the deployed memory:
+
+| Attempt | Expected | Result |
+|---|---|---|
+| `AL-NOOR TRANSPORT`, `Al Noor Transport Co.`, `al noor trading transport`, `AL NOOR TRANSPORT LTD` | one key | ✅ all four fold together |
+| `AL-NOOR TRANSPORT` vs `QASIM WHOLESALE` | different keys | ✅ distinct |
+| A vendor written once, then read back under a different spelling | recognised | ✅ recognised (live, AgentCore Memory) |
+| A vendor never written | flagged as unseen | ✅ flagged, wording marks it a hint not a finding |
+| The memory service unreachable | the review still completes | ✅ `known: None`, error recorded, no failure |
+| No memory configured | silent | ✅ silent |
+
+## 5. What we did **not** measure
 
 - **No human baseline.** We did not time a coordinator doing this by hand with a spreadsheet and a template, so this project makes **no claim of hours or money saved**. The agent's own numbers above are all we can stand behind.
 - **No real organisation, no pilot, no donor.** Every person, receipt, figure and organisation in the demo is fictional and labelled as such inside the app.

@@ -231,3 +231,36 @@ class _FakeVision:
 
     def converse(self, **_):
         return {"output": {"message": {"content": [{"text": json.dumps(self.payload)}]}}}
+
+
+# ── the vendor ledger (AgentCore Memory) ──────────────────────────────────
+def test_vendor_names_fold_to_one_key():
+    from basketbrief.vendors import normalise
+    variants = ["AL-NOOR TRANSPORT", "Al Noor Transport Co.", "al noor trading transport",
+                "AL NOOR TRANSPORT LTD"]
+    assert len({normalise(v) for v in variants}) == 1
+
+
+def test_a_different_vendor_does_not_fold_together():
+    from basketbrief.vendors import normalise
+    assert normalise("AL-NOOR TRANSPORT") != normalise("QASIM WHOLESALE")
+
+
+def test_the_ledger_is_advisory_and_never_fatal(monkeypatch):
+    """If the memory service is unreachable, a review still completes."""
+    from basketbrief import vendors
+
+    def explode():
+        raise RuntimeError("network down")
+
+    monkeypatch.setattr(vendors, "MEMORY_ID", "anything")
+    monkeypatch.setattr(vendors, "_known", explode)
+    result = vendors.check("AL-NOOR TRANSPORT")
+    assert result["known"] is None and "error" in result
+
+
+def test_the_ledger_is_silent_when_not_configured(monkeypatch):
+    from basketbrief import vendors
+    monkeypatch.setattr(vendors, "MEMORY_ID", "")
+    assert vendors.check("anyone")["known"] is None
+    assert vendors.remember("anyone", None, None) is False

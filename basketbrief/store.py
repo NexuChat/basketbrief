@@ -324,6 +324,16 @@ class Store:
             raise Conflict("The attached image is no longer available.")
         reading = (reader or vision.read_receipt)(path.read_bytes())
         text = vision.as_source_text(reading)
+        # A vendor this team has never bought from is a review hint, carried in
+        # AgentCore Memory because it outlives this workspace. Advisory only.
+        ledger = {}
+        if reading.get("ok") and reading.get("vendor"):
+            from . import vendors
+            ledger = vendors.check(reading["vendor"])
+            if ledger.get("known") is False:
+                text += "\nLedger: " + ledger["note"]
+            vendors.remember(reading["vendor"], reading.get("invoice_no"),
+                             str(reading["stated_total"]) if reading.get("stated_total") is not None else None)
         with self.db() as c:
             c.execute("UPDATE evidence SET text=? WHERE id=?", (text, eid))
             self.event(c, pid, "vision", "Read the receipt photograph", {
@@ -331,7 +341,9 @@ class Store:
                 "total": str(reading.get("stated_total")) if reading.get("stated_total") is not None else None,
                 "currency": reading.get("currency"), "items": len(reading.get("items") or []),
                 "confidence": reading.get("confidence"),
-                **({"mismatch": reading["mismatch"]} if reading.get("mismatch") else {})})
+                **({"mismatch": reading["mismatch"]} if reading.get("mismatch") else {}),
+                **({"vendor_new": True} if ledger.get("known") is False else {}),
+                **({"vendor_known": True} if ledger.get("known") is True else {})})
             if reading.get("mismatch"):
                 c.execute("UPDATE evidence SET note=? WHERE id=?", (reading["mismatch"], eid))
         return {"transcribed": bool(reading.get("ok")), "text": text,
