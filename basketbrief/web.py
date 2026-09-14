@@ -38,8 +38,8 @@ class ApprovalIn(BaseModel):
 
 def export_report(payload, version, content_hash, language='en'):
     s=payload['summary']; ar=language=='ar'
-    rows=[('السلال المسلّمة حسب الفريق' if ar else 'Baskets delivered · field-reported',s['delivered']),
-          ('السلال المرتجعة' if ar else 'Baskets returned',s['returned']),
+    rows=[('الطرود المسلّمة حسب الفريق' if ar else 'Kits delivered · team-reported',s['delivered']),
+          ('الطرود المرتجعة' if ar else 'Kits returned',s['returned']),
           ('الأسر الفريدة' if ar else 'Unique households',s['households']),
           ('الإنفاق المبلّغ عنه' if ar else 'Reported spending',f"USD {float(s['reported']):,.2f}"),
           ('الإنفاق المدعوم بإيصالات' if ar else 'Receipt-supported spending',f"USD {float(s['supported']):,.2f}"),
@@ -48,7 +48,7 @@ def export_report(payload, version, content_hash, language='en'):
     issues=''.join(f'<li>{escape(i if isinstance(i,str) else i["note"])}</li>' for i in payload.get('issues',[]))
     return f'''<!doctype html><html lang="{'ar' if ar else 'en'}" dir="{'rtl' if ar else 'ltr'}"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BasketBrief · Report v{version}</title>
     <style>body{{max-width:760px;margin:70px auto;padding:0 24px;color:#19372e;background:#faf9f4;font:17px/1.65 Georgia,serif}}small{{font:12px sans-serif;letter-spacing:1px}}h1{{font-size:42px;line-height:1.15}}table{{width:100%;border-collapse:collapse;margin:35px 0}}th,td{{padding:15px 0;border-bottom:1px solid #d4ded5;text-align:start}}td{{text-align:end}}th{{font-weight:normal}}footer{{font:12px/1.7 sans-serif;color:#55645b;overflow-wrap:anywhere}}.tag{{background:#e3ece0;padding:7px 12px;border-radius:20px}}</style>
-    <small>BASKETBRIEF / FIELD REPORT</small><h1>{'تقرير توزيع السلال الغذائية' if ar else 'September food distribution'}</h1><span class="tag">{'نسخة معتمدة' if ar else 'Approved snapshot'} · v{version}</span><table>{body}</table><ul>{issues}</ul>
+    <small>BASKETBRIEF / DELIVERY REPORT</small><h1>{'تقرير إغاثة الفيضان — الأسبوع الأول' if ar else 'Flood relief distribution — week one'}</h1><span class="tag">{'نسخة معتمدة' if ar else 'Approved snapshot'} · v{version}</span><table>{body}</table><ul>{issues}</ul>
     <footer><p>{escape(payload['disclosure'])}</p><p>Version {version} · SHA-256 {escape(content_hash)}</p><p>Delivered inside BasketBrief. This is not an external delivery or read receipt.</p></footer></html>'''
 
 

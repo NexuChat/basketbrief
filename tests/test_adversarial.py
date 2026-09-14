@@ -48,24 +48,24 @@ def source_id(store, pid, needle):
 def test_an_invented_amount_cannot_become_a_fact(project):
     """The single most important guard: money must be printed on the paper."""
     store, pid, _ = project
-    eid = source_id(store, pid, "FOOD RECEIPT")
+    eid = source_id(store, pid, "SUPPLIES RECEIPT")
     with pytest.raises(Conflict):
-        store.record_expense(pid, eid, "food", "9999.00", "USD", True)
-    assert "food" not in facts_of(store, pid)
+        store.record_expense(pid, eid, "supplies", "9999.00", "USD", True)
+    assert "supplies" not in facts_of(store, pid)
 
 
 def test_an_amount_the_source_states_is_accepted(project):
     store, pid, _ = project
-    eid = source_id(store, pid, "FOOD RECEIPT")
-    store.record_expense(pid, eid, "food", "1200.00", "USD", True)
-    assert facts_of(store, pid)["food"]["value"]["amount"] == "1200.00"
+    eid = source_id(store, pid, "SUPPLIES RECEIPT")
+    store.record_expense(pid, eid, "supplies", "1200.00", "USD", True)
+    assert facts_of(store, pid)["supplies"]["value"]["amount"] == "1200.00"
 
 
 # ── a claim is not a receipt ───────────────────────────────────────────────
 def test_an_expense_claim_cannot_be_marked_receipt_supported(project):
     """A message saying 'I spent sixty dollars' is reported spending, not proof."""
     store, pid, _ = project
-    eid = source_id(store, pid, "Transport cost")
+    eid = source_id(store, pid, "Truck hire")
     store.record_expense(pid, eid, "transport", "60.00", "USD", False)
     fact = facts_of(store, pid)["transport"]["value"]
     assert fact["supported"] is False
@@ -78,7 +78,7 @@ def test_basket_counts_never_become_household_counts(project):
     """The seeded message ends "we have not counted unique households" — and that
     sentence used to satisfy a guard that only looked for the word."""
     store, pid, _ = project
-    eid = source_id(store, pid, "We loaded 100 baskets")
+    eid = source_id(store, pid, "We loaded 100 kits")
     result = store.record_distribution(pid, eid, loaded=100, delivered=92, returned=8, households=92)
     assert result["ignored"]["households"]
     assert facts_of(store, pid).get("households") is None
@@ -93,14 +93,14 @@ def test_a_household_count_the_source_really_states_is_accepted(project):
 
 def test_a_denied_household_count_is_not_accepted(project):
     store, pid, _ = project
-    eid = store.submit(pid, "field", "We delivered 37 baskets. We have not counted households.", "message")["id"]
+    eid = store.submit(pid, "field", "We delivered 37 kits. We have not counted households.", "message")["id"]
     result = store.record_distribution(pid, eid, delivered=37, households=37)
     assert result["ignored"]["households"]
 
 
 def test_a_count_absent_from_the_source_is_dropped_not_invented(project):
     store, pid, _ = project
-    eid = source_id(store, pid, "We loaded 100 baskets")
+    eid = source_id(store, pid, "We loaded 100 kits")
     result = store.record_distribution(pid, eid, loaded=100, delivered=92, returned=777)
     assert result["ignored"]["returned"]
     facts = facts_of(store, pid)
@@ -109,7 +109,7 @@ def test_a_count_absent_from_the_source_is_dropped_not_invented(project):
 
 def test_nothing_stated_at_all_is_refused_outright(project):
     store, pid, _ = project
-    eid = source_id(store, pid, "We loaded 100 baskets")
+    eid = source_id(store, pid, "We loaded 100 kits")
     with pytest.raises(Conflict):
         store.record_distribution(pid, eid, loaded=4242, delivered=4243)
 
@@ -118,10 +118,10 @@ def test_nothing_stated_at_all_is_refused_outright(project):
 def test_a_correction_that_stops_adding_up_is_still_recorded(project):
     """The failure we actually shipped once: the correction was refused and lost."""
     store, pid, _ = project
-    eid = source_id(store, pid, "We loaded 100 baskets")
+    eid = source_id(store, pid, "We loaded 100 kits")
     store.record_distribution(pid, eid, loaded=100, delivered=92, returned=8)
     later = store.submit(pid, "field",
-                         "Correction: we recounted at the warehouse. 88 baskets were delivered, not 92.",
+                         "Correction: we recounted at the warehouse. 88 kits were delivered, not 92.",
                          "message")["id"]
     result = store.record_distribution(pid, later, delivered=88)
     assert facts_of(store, pid)["delivered"]["value"] == 88
@@ -130,7 +130,7 @@ def test_a_correction_that_stops_adding_up_is_still_recorded(project):
 
 def test_the_gap_is_named_in_households_not_only_in_arithmetic(project):
     store, pid, _ = project
-    eid = source_id(store, pid, "We loaded 100 baskets")
+    eid = source_id(store, pid, "We loaded 100 kits")
     store.record_distribution(pid, eid, loaded=100, delivered=92, returned=8)
     later = store.submit(pid, "field", "Recount: 88 delivered.", "message")["id"]
     note = store.record_distribution(pid, later, delivered=88)["note"]
@@ -153,11 +153,11 @@ def test_only_the_coordinator_can_approve(project):
 def test_an_approval_bound_to_old_evidence_is_refused(project):
     """Approve, then change the evidence, then try the same approval again."""
     store, pid, _ = project
-    for needle, kwargs in (("FOOD RECEIPT", dict(category="food", amount="1200.00", supported=True)),
-                           ("Transport cost", dict(category="transport", amount="60.00", supported=False))):
+    for needle, kwargs in (("SUPPLIES RECEIPT", dict(category="supplies", amount="1200.00", supported=True)),
+                           ("Truck hire", dict(category="transport", amount="60.00", supported=False))):
         store.record_expense(pid, source_id(store, pid, needle), kwargs["category"],
                              kwargs["amount"], "USD", kwargs["supported"])
-    store.record_distribution(pid, source_id(store, pid, "We loaded 100 baskets"),
+    store.record_distribution(pid, source_id(store, pid, "We loaded 100 kits"),
                               loaded=100, delivered=92, returned=8)
     store.prepare(pid)
     with store.db() as c:
@@ -183,7 +183,7 @@ def test_an_instruction_inside_evidence_changes_nothing(project, hostile):
     # and it cannot be turned into money either: a field message is not a receipt,
     # and the amount is not in the source
     with pytest.raises((Conflict, Forbidden)):
-        store.record_expense(pid, eid, "food", "500.00", "USD", True)
+        store.record_expense(pid, eid, "supplies", "500.00", "USD", True)
 
 
 # ── duplicates ─────────────────────────────────────────────────────────────
@@ -197,7 +197,7 @@ def test_the_same_source_twice_is_recorded_once(project):
 
 # ── the number parser itself ───────────────────────────────────────────────
 @pytest.mark.parametrize("text,expected", [
-    ("88 baskets were delivered, not 92.", {88, 92}),
+    ("88 kits were delivered, not 92.", {88, 92}),
     ("Four more came back.", {4}),
     ("أربع سلال رجعت", {4}),
     ("Total USD 1,200.00", {Decimal("1200.00")}),

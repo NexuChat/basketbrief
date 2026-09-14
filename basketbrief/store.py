@@ -19,7 +19,7 @@ class Forbidden(ValueError):
     pass
 
 
-ROLES = {"coordinator": "Amal · Coordinator", "finance": "Rana · Finance", "field": "Sami · Field team",
+ROLES = {"coordinator": "Amal · Coordinator", "finance": "Rana · Supplies & receipts", "field": "Sami · Delivery team",
          "donor_a": "Northstar Foundation", "donor_b": "Community Giving Circle"}
 
 
@@ -157,10 +157,10 @@ class Store:
             c.execute("INSERT INTO projects(id,engine,created) VALUES(?,?,?)", (pid, engine, time.time()))
             for role, token in tokens.items():
                 c.execute("INSERT INTO members VALUES(?,?,?)", (pid, role, digest(token)))
-            self.event(c, pid, "workspace", "A fresh field report, ready to follow through", {"synthetic": True})
-        self.submit(pid, "finance", "FOOD RECEIPT F-101. 100 food baskets at USD 12.00 each. Total USD 1,200.00. Paid. Synthetic receipt.", "receipt")
-        self.submit(pid, "finance", "Transport cost: USD 60.00. I recorded this expense but the receipt is still missing.", "expense_claim")
-        self.submit(pid, "field", "We loaded 100 baskets. 92 baskets delivered, 8 returned to storage. We have not counted unique households.", "message")
+            self.event(c, pid, "workspace", "A fresh delivery report, ready to follow through", {"synthetic": True})
+        self.submit(pid, "finance", "SUPPLIES RECEIPT F-101. 100 relief kits at USD 12.00 each — water, tarps, cleaning supplies. Total USD 1,200.00. Paid. Synthetic receipt.", "receipt")
+        self.submit(pid, "finance", "Truck hire to the flooded streets: USD 60.00. I recorded this expense but the receipt is still missing.", "expense_claim")
+        self.submit(pid, "field", "We loaded 100 kits. 92 kits delivered on Creekside and Mill Row, 8 returned to the church hall. We have not counted unique households.", "message")
         return {"id": pid, "tokens": tokens, "engine": engine}
 
     def authenticate(self, pid, token):
@@ -223,8 +223,8 @@ class Store:
                   (pid, key, pack(value), eid))
 
     def record_expense(self, pid, eid, category, amount, currency, supported):
-        if category not in ("food", "transport"):
-            raise Conflict("This distribution report supports food and transport expenses.")
+        if category not in ("supplies", "transport"):
+            raise Conflict("This distribution report supports supplies and transport expenses.")
         amount = money(amount)
         with self.db() as c:
             e = self.get_evidence(c, pid, eid, "finance")
@@ -261,7 +261,7 @@ class Store:
                     vals[key] = None
                 elif key == "households" and not states_household_count(e["text"], v):
                     ignored[key] = ("the source does not state a household count; "
-                                    "basket counts do not establish unique households")
+                                    "kit counts do not establish unique households")
                     vals[key] = None
             loaded, delivered, returned, households = (vals["loaded"], vals["delivered"],
                                                        vals["returned"], vals["households"])
@@ -283,11 +283,11 @@ class Store:
                     # in those words rather than hiding behind a sum.
                     n = abs(missing)
                     if missing > 0:
-                        gap = (f"{n} basket{'s' if n != 1 else ''} unaccounted for: "
+                        gap = (f"{n} kit{'s' if n != 1 else ''} unaccounted for: "
                                f"{merged['loaded']} loaded, {merged['delivered']} reported "
                                f"delivered, {merged['returned']} returned. "
-                               f"{n} household{'s were' if n != 1 else ' was'} on the list "
-                               f"with no answer either way.")
+                               f"{n} household{'s that registered at the shelter have' if n != 1 else ' that registered at the shelter has'} "
+                               f"no answer either way.")
                     else:
                         gap = (f"{merged['delivered']} delivered plus {merged['returned']} "
                                f"returned is {n} more than the {merged['loaded']} loaded. "
@@ -363,7 +363,7 @@ class Store:
             open_keys = {r["key"] for r in c.execute(
                 "SELECT key FROM questions WHERE project=? AND status IN ('open','answered')", (pid,))}
             facts = self.facts(c, pid)
-        for key in ("transport", "food"):
+        for key in ("transport", "supplies"):
             fact = facts.get(key)
             value = fact["value"] if isinstance(fact, dict) else None
             if isinstance(value, dict) and value.get("supported") is False and f"{key}_receipt" not in open_keys:
@@ -395,7 +395,7 @@ class Store:
 
     @staticmethod
     def summary_from(facts):
-        expenses = [facts[k]["value"] for k in ("food", "transport") if k in facts]
+        expenses = [facts[k]["value"] for k in ("supplies", "transport") if k in facts]
         reported = sum((Decimal(e["amount"]) for e in expenses), Decimal(0))
         supported = sum((Decimal(e["amount"]) for e in expenses if e["supported"]), Decimal(0))
         return {"reported": money(reported), "supported": money(supported), "unsupported": money(reported-supported),
@@ -428,10 +428,10 @@ class Store:
             summary = self.summary_from(f)
             revision = c.execute("SELECT revision FROM projects WHERE id=?", (pid,)).fetchone()[0]
             issues = [dict(r) for r in c.execute("SELECT id,note FROM evidence WHERE project=? AND status='review' ORDER BY id", (pid,))]
-            payload = {"title": "September food distribution", "period": "September 2026 · Demonstration",
+            payload = {"title": "Flood relief distribution — week one", "period": "September 2026 · Demonstration",
                        "summary": summary, "facts": f, "issues": issues,
                        "recipients": ["donor_a", "donor_b"], "synthetic": True,
-                       "disclosure": "Synthetic scenario. Delivery counts are field-reported, not independently verified — a basket counted as delivered is not proof that a household received it. Receipt-supported spending is not proof of payment or impact."}
+                       "disclosure": "Synthetic scenario. Delivery counts are field-reported, not independently verified — a kit counted as delivered is not proof that a household received it. Receipt-supported spending is not proof of payment or impact."}
             h = digest(pack(payload))
             last = c.execute("SELECT * FROM reports WHERE project=? ORDER BY version DESC LIMIT 1", (pid,)).fetchone()
             if last and last["hash"] == h and last["revision"] == revision:
@@ -454,8 +454,8 @@ class Store:
             if c.execute("SELECT 1 FROM questions WHERE project=? AND status='open'", (pid,)).fetchone():
                 raise Conflict("A contributor is still answering. Wait for their reply.")
             payload = json.loads(r["payload"])
-            if payload["summary"]["delivered"] is None or "food" not in payload["facts"]:
-                raise Conflict("A food expense and field-reported delivery count are required.")
+            if payload["summary"]["delivered"] is None or "supplies" not in payload["facts"]:
+                raise Conflict("A supplies expense and a delivery count are required.")
             if (Decimal(payload["summary"]["unsupported"]) > 0 or payload["issues"]) and not acknowledge:
                 raise Conflict("Acknowledge the unresolved items before sharing this incomplete report.")
             c.execute("INSERT OR IGNORE INTO approvals VALUES(?,?,?,?,?)", (report_id, pid, content_hash, int(acknowledge), time.time()))
@@ -479,7 +479,7 @@ class Store:
                             "issues": [i["note"] for i in payload["issues"]], "title": payload["title"],
                             "language": "ar" if recipient == "donor_b" else "en"}
                     result = c.execute("INSERT OR IGNORE INTO inbox(project,recipient,kind,subject,body,delivery_key,created) VALUES(?,?,?,?,?,?,?)",
-                                       (pid, recipient, "report", f"September distribution · v{r['version']}", pack(body), key, time.time()))
+                                       (pid, recipient, "report", f"Flood relief, week one · v{r['version']}", pack(body), key, time.time()))
                     if result.rowcount:
                         self.event(c, pid, "delivery", f"Delivered to {ROLES[recipient]}", {"report_id": r["id"], "recipient": recipient, "receipt": key, "channel": "native_inbox"})
                 c.execute("UPDATE reports SET status='delivered' WHERE id=?", (r["id"],))

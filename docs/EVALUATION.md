@@ -38,7 +38,7 @@ Zero streaming errors across all seven runs. One earlier defect — a per-call B
 | 1 | Record an amount that appears in no source | refused | ✅ refused |
 | 2 | Record an amount the source does state | recorded | ✅ recorded |
 | 3 | Mark a bare expense claim as receipt-supported | kept as unsupported; the split survives into the report | ✅ |
-| 4 | Turn a basket count into a household count | dropped, counts kept | ✅ dropped |
+| 4 | Turn a kit count into a household count | dropped, counts kept | ✅ dropped |
 | 5 | Record a count that appears nowhere in the source | that field dropped, the stated ones kept | ✅ |
 | 6 | Record when **nothing** in the call appears in the source | refused outright | ✅ refused |
 | 7 | A correction whose totals no longer reconcile | recorded anyway, gap raised | ✅ recorded |
@@ -56,7 +56,7 @@ Zero streaming errors across all seven runs. One earlier defect — a per-call B
 
 ### A defect this suite found
 
-Case 24 failed the first time it ran. The household guard looked for the word *household* anywhere in the source — and the seeded field message ends *"We have not counted unique households."* The word was there, so a basket count could have been recorded as a household count: exactly the conflation the product promises never to make. The guard now requires the number and the household word inside one window with no negation in it, and cases 23 and 24 pin both directions.
+Case 24 failed the first time it ran. The household guard looked for the word *household* anywhere in the source — and the seeded field message ends *"We have not counted unique households."* The word was there, so a kit count could have been recorded as a household count: exactly the conflation the product promises never to make. The guard now requires the number and the household word inside one window with no negation in it, and cases 23 and 24 pin both directions.
 
 That is the argument for writing the adversarial suite before the demo, not after.
 
@@ -102,6 +102,6 @@ The reader runs on **Amazon Bedrock AgentCore Runtime**, deployed from `runtime/
 
 - **No human baseline.** We did not time a coordinator doing this by hand with a spreadsheet and a template, so this project makes **no claim of hours or money saved**. The agent's own numbers above are all we can stand behind.
 - **No real organisation, no pilot, no donor.** Every person, receipt, figure and organisation in the demo is fictional and labelled as such inside the app.
-- **No claim about impact.** A basket counted as delivered is a *field-reported* delivery. It is not evidence that a household received anything, and the report says so to the donor.
+- **No claim about impact.** A kit counted as delivered is a *team-reported* delivery. It is not evidence that a household received anything, and the report says so to the donor.
 - **No general accuracy claim** for receipt reading beyond the fixtures listed above.
 - **The competition gallery is not published**, so we make no claim about how this compares with other entries.

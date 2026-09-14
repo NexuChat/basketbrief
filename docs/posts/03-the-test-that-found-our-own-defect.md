@@ -1,18 +1,18 @@
 # Agents for Humans: the test that found our own defect
 
-A green happy path proves nothing about an agent that handles other people's money. So before recording a demo of BasketBrief — an agent that finishes donor reports for a small food-aid team — I wrote twenty-four cases whose only job was to make it misbehave.
+A green happy path proves nothing about an agent that handles other people's money. So before recording a demo of BasketBrief — an agent that finishes donor reports for a neighbourhood mutual-aid group — I wrote twenty-four cases whose only job was to make it misbehave.
 
 One of them worked. That is the point of this post.
 
 ## The promise
 
-BasketBrief must never turn a basket count into a household count. Those are different facts: you can hand out a hundred baskets to sixty families, and a donor who is told "we reached a hundred households" has been misled by arithmetic.
+BasketBrief must never turn a kit count into a household count. Those are different facts: you can hand out a hundred kits to sixty families, and a donor who is told "we reached a hundred households" has been misled by arithmetic.
 
 My guard looked reasonable:
 
 ```python
 if households is not None and not re.search(r"household|famil|أسر|عائل", source_text, re.I):
-    ignored["households"] = "basket counts do not establish unique households"
+    ignored["households"] = "kit counts do not establish unique households"
 ```
 
 *Only accept a household count if the source is actually talking about households.* Fine.
@@ -21,16 +21,16 @@ if households is not None and not re.search(r"household|famil|أسر|عائل", 
 
 The seeded field message in our own demo data ends like this:
 
-> *"We loaded 100 baskets. 92 baskets delivered, 8 returned to storage. **We have not counted unique households.**"*
+> *"We loaded 100 kits. 92 kits delivered, 8 returned to storage. **We have not counted unique households.**"*
 
 The word `households` is right there. My regex found it, the guard passed, and `households=92` could be written straight into a donor's report — from a sentence that explicitly says the opposite.
 
 The test that caught it was four lines:
 
 ```python
-def test_basket_counts_never_become_household_counts(project):
+def test_kit_counts_never_become_household_counts(project):
     store, pid, _ = project
-    eid = source_id(store, pid, "We loaded 100 baskets")
+    eid = source_id(store, pid, "We loaded 100 kits")
     result = store.record_distribution(pid, eid, loaded=100, delivered=92, returned=8, households=92)
     assert result["ignored"]["households"]
 ```
@@ -51,7 +51,7 @@ for match in HOUSEHOLD_WORD.finditer(text):
 return False
 ```
 
-And both directions are now pinned: a source that genuinely says *"We reached 37 unique households today"* is accepted; a source that says *"We delivered 37 baskets. We have not counted households"* is not.
+And both directions are now pinned: a source that genuinely says *"We reached 37 unique households today"* is accepted; a source that says *"We delivered 37 kits. We have not counted households"* is not.
 
 ## The other twenty-three
 

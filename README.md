@@ -2,7 +2,7 @@
 
 **Chases the missing evidence, then delivers the donor report.**
 
-A volunteer-run food-aid team owes two donors a report on last week's distribution. The receipts, the photographs and the field messages are scattered across people, and one receipt is missing. BasketBrief is a background agent that reads what came in, works out what is still missing, asks **the person who has it** — once — takes their answer, recalculates, and delivers an approved report to each donor's inbox. When a correction arrives afterwards, it updates every affected report and refuses the approval that no longer fits.
+A volunteer-run relief group owes two donors a report on the first week of flood relief. The receipts, the photographs and the field messages are scattered across people, and one receipt is missing. BasketBrief is a background agent that reads what came in, works out what is still missing, asks **the person who has it** — once — takes their answer, recalculates, and delivers an approved report to each donor's inbox. When a correction arrives afterwards, it updates every affected report and refuses the approval that no longer fits.
 
 Built for the [Agents for Humans Hackathon](https://agentsforhumans.devpost.com/) · Good Neighbor Agents track.
 
@@ -12,7 +12,7 @@ Built for the [Agents for Humans Hackathon](https://agentsforhumans.devpost.com/
 - **Memory:** **Amazon Bedrock AgentCore Memory** holds the team's vendor ledger — knowledge that outlives a workspace
 - **Architecture:** [`docs/architecture.png`](docs/architecture.png)
 
-> Every organisation, person, receipt and figure in the demo is fictional and labelled as such. A field-reported delivery is not independent proof that aid reached anyone, and the app never claims otherwise.
+> Every organisation, person, receipt and figure in the demo is fictional and labelled as such. A team-reported delivery is not independent proof that aid reached anyone, and the app never claims otherwise.
 
 ---
 
@@ -21,10 +21,10 @@ Built for the [Agents for Humans Hackathon](https://agentsforhumans.devpost.com/
 Open the live demo and press **Play the whole story**. One button runs the five steps below against the live agent — same API calls a person makes, nothing recorded — in about 45 seconds. To drive it yourself instead, stay as **Amal · Coordinator**:
 
 1. The agent reads three sources and the page settles on **“One thing is still missing.”** `$1,200` of the `$1,260` reported spending has a receipt behind it; `$60` does not. It has already asked Rana in Finance — **once**.
-2. Switch to **Rana · Finance** (top-right). Answer the question by **uploading a photo of a receipt** — any receipt image works, or use the sample. Amazon Nova Pro transcribes it and the transcription becomes the source text, so only an amount actually printed on the paper can enter the ledger.
+2. Switch to **Rana · Supplies & receipts** (top-right). Answer the question by **uploading a photo of a receipt** — any receipt image works, or use the sample. Amazon Nova Pro transcribes it and the transcription becomes the source text, so only an amount actually printed on the paper can enter the ledger.
 3. Back as Amal: spending is now fully supported and **version 2** is ready. Approve it. Both donor inboxes receive it, each with its own delivery receipt. Open **Northstar Foundation** to read exactly what was sent.
-4. Switch to **Sami · Field team** and send a correction: *“Correction: we recounted at the warehouse. 88 baskets were delivered, not 92.”*
-5. Back as Amal: the figures move, **version 3** is drafted, and the gap is stated as what it means for people — *“4 baskets unaccounted for: 100 loaded, 88 reported delivered, 8 returned. 4 households were on the list with no answer either way.”* The approval bound to version 2 is **refused** rather than silently reused.
+4. Switch to **Sami · Delivery team** and send a correction: *“Correction: we recounted at the warehouse. 88 kits were delivered, not 92.”*
+5. Back as Amal: the figures move, **version 3** is drafted, and the gap is stated as what it means for people — *“4 kits unaccounted for: 100 loaded, 88 reported delivered, 8 returned. 4 households that registered at the shelter have no answer either way.”* The approval bound to version 2 is **refused** rather than silently reused.
 
 Everything above is the running agent; nothing is scripted or pre-recorded.
 
@@ -49,7 +49,7 @@ A workspace exists for one distribution and is then thrown away. A team is not: 
 
 ## The one differentiator, stated plainly
 
-Two donors want overlapping things. Most tooling asks the field team twice. BasketBrief asks **once**, reuses that one answer across every compatible requirement, and — the part that is genuinely hard — when a later correction changes a fact, it walks back through the reports that depended on it, redrafts them, and invalidates approvals that were bound to the old numbers.
+Two donors want overlapping things. Most tooling asks the delivery team twice. BasketBrief asks **once**, reuses that one answer across every compatible requirement, and — the part that is genuinely hard — when a later correction changes a fact, it walks back through the reports that depended on it, redrafts them, and invalidates approvals that were bound to the old numbers.
 
 ## Run it locally
 

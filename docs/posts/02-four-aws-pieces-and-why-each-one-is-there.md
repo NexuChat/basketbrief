@@ -1,6 +1,6 @@
 # Agents for Humans: four AWS pieces, and why each one is there
 
-BasketBrief finishes the weekly donor report for a small food-aid team. It reads the receipts and field messages, chases the one that is missing, recalculates, and delivers an approved report to each donor. Four AWS pieces carry it. This is what each one is actually for — and what I would have got wrong without measuring first.
+BasketBrief finishes the weekly donor report for a neighbourhood mutual-aid group. It reads the receipts and field messages, chases the one that is missing, recalculates, and delivers an approved report to each donor. Four AWS pieces carry it. This is what each one is actually for — and what I would have got wrong without measuring first.
 
 ## 1. Strands Agents SDK — the part that decides
 
