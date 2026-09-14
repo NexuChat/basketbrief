@@ -112,6 +112,77 @@ async function playStory() {
   } finally { storyRunning = false; await refresh(true); }
 }
 
+/* ── bring your own receipt ───────────────────────────────────────────────
+   A visitor should not have to care about strangers before they believe any of
+   this. The first thing offered is their own piece of paper, read by the same
+   deployed reader, with the same guards shown refusing what is not printed on it.
+   Nothing is stored and it never enters a workspace. */
+let ownReading = null, ownBusy = false;
+
+function ownReceipt() {
+  const r = ownReading;
+  let body;
+  if (ownBusy) {
+    body = `<div class="own-wait"><span class="spinner"></span> Reading your receipt on Amazon Bedrock…</div>`;
+  } else if (!r) {
+    body = `<label class="own-drop" for="own-file">
+        <input id="own-file" type="file" accept="image/png,image/jpeg">
+        <b>Drop a receipt here</b>
+        <span>Any real receipt from your wallet — a coffee, a taxi, a hardware shop. PNG or JPEG, under 2 MB.</span>
+        <span class="own-cta">Choose an image</span>
+      </label>
+      <p class="own-foot">It is read by the same agent this team uses, and thrown away immediately. Nothing is stored and nothing enters a workspace.</p>`;
+  } else if (!r.ok) {
+    body = `<div class="own-result"><p class="own-bad">${esc(r.error || 'That did not read as a receipt.')}</p>
+      <p class="own-foot">An unreadable image becomes an explicit failure here — never a zero, and never a guess.</p>
+      <button class="button secondary" data-action="own-reset">Try another <span>↻</span></button></div>`;
+  } else {
+    const rows = [
+      ['Vendor', r.vendor || '—'], ['Invoice', r.invoice_no || '—'],
+      ['Date', r.date || '—'], ['Printed total', r.stated_total ? `${r.stated_total} ${r.currency || ''}`.trim() : '—'],
+      ['Line items add to', r.summed_total ?? '—'],
+    ];
+    const verdict = r.mismatch
+      ? `<p class="own-flag">${esc(r.mismatch)} <b>The printed total was not rewritten.</b></p>`
+      : (r.stated_total && r.summed_total
+          ? `<p class="own-ok">The line items add up to the printed total.</p>`
+          : `<p class="own-foot">No line items to check against a total on this one.</p>`);
+    const ledger = r.vendor_known === false
+      ? `<p class="own-flag">${esc(r.vendor_note || 'This vendor is not in the ledger.')}</p>`
+      : (r.vendor_known === true ? `<p class="own-ok">This team has bought from this vendor before.</p>` : '');
+    body = `<div class="own-result">
+      <dl class="own-facts">${rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(String(v))}</dd></div>`).join('')}</dl>
+      ${verdict}${ledger}
+      <div class="own-guard"><span>Only these numbers could be recorded from your paper</span>
+        <div>${(r.recordable || []).map(n => `<code>${esc(n)}</code>`).join('')}</div>
+        <small>Anything else — a total someone remembers, a figure from another receipt — is refused by the tool, not by the prompt.</small></div>
+      <p class="own-foot">Read in ${r.seconds}s on ${r.read_on === 'agentcore-runtime' ? 'Amazon Bedrock AgentCore Runtime' : 'this process'} · ${esc(r.model || '')}</p>
+      <button class="button secondary" data-action="own-reset">Read another <span>↻</span></button></div>`;
+  }
+  return `<section class="own" id="own"><div class="own-head">
+      <span class="eyebrow">START HERE · YOUR OWN PAPER</span>
+      <h2>Before the story, try it on something of yours.</h2>
+      <p>The same reader, the same guards. You will see it refuse a number that is not printed on your receipt.</p>
+    <ul class="own-list">
+      <li><b>It transcribes, it does not decide.</b> Amazon Nova Pro reads the picture; code turns it into typed fields.</li>
+      <li><b>It adds your line items up</b> against the printed total, and if they disagree it says so — without rewriting your receipt.</li>
+      <li><b>It shows you its own limits:</b> the exact numbers that could enter a ledger from your paper, and nothing else.</li>
+    </ul>
+    </div><div class="own-body">${body}</div></section>`;
+}
+
+async function readOwn(file) {
+  ownBusy = true; ownReading = null; render(state);
+  try {
+    const body = new FormData(); body.append('file', file);
+    const response = await fetch('/api/read-receipt', {method: 'POST', body});
+    const data = await response.json();
+    ownReading = response.ok ? data : {ok: false, error: data.error || 'That did not read as a receipt.'};
+  } catch (e) {
+    ownReading = {ok: false, error: 'The reader could not be reached.'};
+  } finally { ownBusy = false; render(state); }
+}
+
 function statusStrip(s) {
   // A workbench, not a landing page: one line of state, the figures inline,
   // and the work itself given the whole frame underneath.
@@ -269,7 +340,7 @@ function ackBox(r) {
 function donors(s) { const delivered=s.report?.status==='delivered'; return `<section class="donors" id="reports"><div class="section-line"><h2 class="section-title">Two reports. One effort.</h2></div>${[['donor_a','✳','Northstar Foundation','English · Financial & delivery brief'],['donor_b','◌','Community Giving Circle','العربية · ملخص التوزيع والإنفاق']].map(([r,icon,name,desc])=>`<article class="donor-card"><div class="donor-mark ${r==='donor_b'?'blue':''}" aria-hidden="true">${icon}</div><div><h3>${name}</h3><p>${desc}</p>${delivered?`<button class="text-button" data-role="${r}">Open delivered report ↗</button>`:''}</div><span class="badge ${delivered?'':'neutral'}">${delivered?'✓ Delivered':'Draft'}</span></article>`).join('')}<p class="form-hint">Same approved evidence. Two languages. No invented impact claims.</p></section>`; }
 function trace(s) { return `<details class="trace" id="trace"><summary><span>Behind the brief · ${s.events.length} recent recorded steps</span><span>${s.project.engine==='bedrock'?'Strands + Amazon Bedrock':'Local test parser · No AI'}</span></summary><div class="trace-list">${s.events.map(e=>`<div class="trace-event"><time>${new Date(e.created*1000).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</time><div><span class="trace-kind">${esc(e.kind)}</span>${esc(e.title)}<p>${esc(e.detail.reason || e.detail.text || (e.kind==='complete'?JSON.stringify(e.detail):e.detail.hash?'Snapshot '+e.detail.hash.slice(0,18)+'…':e.detail.receipt||''))}</p></div></div>`).join('')}</div></details>`; }
 function coordinator(s) {
-  return statusStrip(s) + `<div class="bench">
+  return statusStrip(s) + ownReceipt() + `<div class="bench">
       <section class="panel" id="sources"><div class="panel-head"><h2>Evidence.</h2><span class="count">${s.evidence.length} sources</span></div>${sourceCards(s.evidence)}<p class="panel-foot">Every figure links back to the source that stated it. A reported delivery is not independent proof of impact.</p></section>
       ${liveTimeline(s)}
       <div class="bench-right">${nextStep(s)}${donors(s)}</div>
@@ -310,7 +381,8 @@ async function start(fresh=false) {
 }
 async function showSource(id) {const e=state.evidence.find(e=>e.id===Number(id));if(!e)return;$('#source-content').innerHTML=`<h2>${esc(title(e))}</h2><p class="form-hint">${esc(names[e.actor])} · Source ${ordinal.get(e.id) ?? e.id} · ${esc(e.note||e.status)}</p><pre>${esc(e.text)}</pre>`;$('#source-dialog').showModal();if(e.attachment){try{const r=await api('/evidence/'+e.id+'/image',{raw:true});const url=URL.createObjectURL(await r.blob());const img=document.createElement('img');img.alt='Original uploaded receipt';img.src=url;img.onload=()=>URL.revokeObjectURL(url);$('#source-content').append(img);}catch(err){toast(err.message);}}}
 $('#role').addEventListener('change',e=>switchRole(e.target.value));
-document.addEventListener('change',e=>{if(e.target.id==='receipt-image'){const n=document.getElementById('receipt-name');if(n)n.textContent=e.target.files[0]?e.target.files[0].name.slice(0,42):'No file chosen';}});
+document.addEventListener('change',e=>{if(e.target.id==='own-file'&&e.target.files[0]){readOwn(e.target.files[0]);return;}
+ if(e.target.id==='receipt-image'){const n=document.getElementById('receipt-name');if(n)n.textContent=e.target.files[0]?e.target.files[0].name.slice(0,42):'No file chosen';}});
 $('#new-workspace').addEventListener('click',()=>{requestEpoch++;workspace=null;start(true);});
 $('#close-dialog').addEventListener('click',()=>$('#source-dialog').close());
 $('#source-dialog').addEventListener('click',e=>{if(e.target===$('#source-dialog'))$('#source-dialog').close();});
@@ -321,6 +393,7 @@ document.addEventListener('click', async e=>{
  if(b.dataset.source){await showSource(b.dataset.source);return;}
  if(b.dataset.sample){const samples={receipt:['receipt','TRANSPORT RECEIPT TR-204. Vehicle rental for September food distribution. Total USD 60.00. Paid. Synthetic receipt.'],missing:['message','I cannot find the transport receipt. Keep the USD 60 expense reported but unsupported.'],correction:['correction','Correction to our previous update: 100 baskets loaded, 90 baskets delivered, 10 returned to storage. Unique household count is still unknown.']};const [kind,text]=samples[b.dataset.sample];$('#evidence-kind').value=kind;$('#evidence-text').value=text;$('#evidence-text').focus();return;}
  if(b.dataset.export){b.disabled=true;const response=await api('/reports/'+b.dataset.export,{raw:true});const url=URL.createObjectURL(await response.blob());const a=document.createElement('a');a.href=url;a.download='BasketBrief-report-'+b.dataset.export+(role==='donor_b'?'-ar':'')+'.html';a.click();setTimeout(()=>URL.revokeObjectURL(url),10000);return;}
+ if(b.dataset.action==='own-reset'){ownReading=null;render(state);return;}
  if(b.dataset.action==='play-story'){playStory();return;}
  if(b.dataset.action==='stop-story'){storyAbort=true;return;}
  if(b.dataset.action==='try-your-own'){$('#story-caption').classList.remove('show');await switchRole('finance');return;}

@@ -6,6 +6,7 @@ import json
 import os
 import secrets
 import threading
+import time
 from contextlib import asynccontextmanager
 from html import escape
 from pathlib import Path
@@ -18,7 +19,7 @@ from pydantic import BaseModel, Field
 from PIL import Image, UnidentifiedImageError
 
 from .agent import process_project
-from .store import Store, Conflict, Forbidden, ROLES
+from .store import numeric_values as store_numbers, Store, Conflict, Forbidden, ROLES
 
 STATIC = Path(__file__).parent / 'static'
 
@@ -160,6 +161,46 @@ def create_app(db_path=None, engine=None, background=True):
             if not message:raise Forbidden('No report has been delivered to this inbox.')
             p=json.loads(message['body'])
             return HTMLResponse(export_report(p,p['version'],p['hash'],p['language']))
+
+    @app.post('/api/read-receipt')
+    async def read_any_receipt(request:Request,file:UploadFile=File(...)):
+        """Read a receipt the visitor brought, and show what the guards do with it.
+
+        Nothing is stored and nothing enters a workspace. This exists so the first
+        thing a visitor sees is a guard refusing something on their own piece of
+        paper, rather than a story about strangers.
+        """
+        raw=await file.read(2_000_001)
+        if len(raw)>2_000_000:return JSONResponse({'error':'Use an image smaller than 2 MB.'},status_code=422)
+        try:
+            picture=Image.open(io.BytesIO(raw))
+            if picture.width*picture.height>12_000_000:raise ValueError('too large')
+            picture.verify()
+            picture=Image.open(io.BytesIO(raw)).convert('RGB')
+            picture.thumbnail((1600,1600))
+        except (UnidentifiedImageError,ValueError,OSError,Image.DecompressionBombError):
+            return JSONResponse({'error':'Upload a valid PNG or JPEG.'},status_code=422)
+        buffer=io.BytesIO();picture.save(buffer,format='PNG')
+        from . import vendors, vision
+        started=time.monotonic()
+        reading=vision.read_receipt(buffer.getvalue())
+        ledger=vendors.check(reading.get('vendor') or '') if reading.get('ok') else {'known':None}
+        text=vision.as_source_text(reading)
+        numbers=sorted(str(n) for n in store_numbers(text))
+        return {'ok':bool(reading.get('ok')),
+                'seconds':round(time.monotonic()-started,1),
+                'read_on':reading.get('where','in-process'),
+                'model':reading.get('model'),
+                'vendor':reading.get('vendor'),'invoice_no':reading.get('invoice_no'),
+                'date':reading.get('date'),'currency':reading.get('currency'),
+                'items':[{k:(str(v) if v is not None else None) for k,v in i.items()} for i in reading.get('items',[])],
+                'stated_total':str(reading['stated_total']) if reading.get('stated_total') is not None else None,
+                'summed_total':str(reading['summed_total']) if reading.get('summed_total') is not None else None,
+                'mismatch':reading.get('mismatch'),
+                'confidence':reading.get('confidence'),
+                'vendor_known':ledger.get('known'),'vendor_note':ledger.get('note'),
+                'recordable':numbers[:24],
+                'source_text':text}
 
     @app.post('/api/projects/{pid}/upload',status_code=201)
     async def upload(pid:str,request:Request,file:UploadFile=File(...),question_id:int|None=Form(None)):
