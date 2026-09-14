@@ -67,7 +67,7 @@ python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 week by hand — **41**, against **2** decisions left with the agent. Every number is
 derived at runtime from the same evidence; the two assumptions it makes are printed
 so you can disagree and rerun. It counts steps, not minutes: this project makes no
-claim of hours or money saved. See [`docs/EVALUATION.md`](docs/EVALUATION.md) §6.
+claim of hours or money saved. See [`docs/EVALUATION.md`](docs/EVALUATION.md) §6 and §7.
 
 `python -m basketbrief.demo` prints the run end to end: the three sources, the gap the
 agent finds, the question it sends to one person, the answer, the approval bound to a

@@ -173,7 +173,7 @@ and neither is an efficiency.
 
 ## 8. What we did **not** measure
 
-- **No timed human baseline.** Section 6 counts acts, not minutes. This project makes **no claim of hours or money saved**.
+- **No timed human baseline.** Section 7 counts acts, not minutes. This project makes **no claim of hours or money saved**.
 - **No real organisation, no pilot, no donor.** Every person, receipt, figure and organisation in the demo is fictional and labelled as such inside the app.
 - **No claim about impact.** A kit counted as delivered is a *team-reported* delivery. It is not evidence that a household received anything, and the report says so to the donor.
 - **No general accuracy claim** for receipt reading beyond the fixtures listed above.
