@@ -1,0 +1,1 @@
+Back on the coordinator's screen: every reported dollar now has a receipt behind it, and version two is ready. This is the only decision she is asked to make. Her approval is bound to this exact version and its content hash.
