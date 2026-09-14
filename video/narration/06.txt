@@ -1,1 +1,1 @@
-Then the field team recounts at the warehouse. Eighty-eight delivered, not ninety-two.
+Every reported dollar now has a receipt behind it. This is the only decision the coordinator is asked to make, and her approval is bound to this exact version and its content hash. Both donors receive it, each with their own delivery receipt.

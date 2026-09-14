@@ -1,1 +1,1 @@
-This is BasketBrief. It has already read the three sources, recorded only the amounts each one actually states, and found the gap: twelve hundred dollars has a receipt behind it, sixty dollars does not.
+Before any of that, try it on something of your own. Drop in a real receipt from your wallet and the same agent reads it: vendor, invoice, line items. It adds them up against the printed total, and it shows you the only numbers that could ever enter a ledger from your paper. Anything else is refused by the code, not by the prompt.

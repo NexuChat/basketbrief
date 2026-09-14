@@ -1,1 +1,1 @@
-It asks Rana in finance directly, once, instead of routing it through the coordinator. Rana replies with a photograph of the receipt, and Amazon Nova Pro reads the picture before the review even starts: vendor, invoice number, two line items, sixty dollars.
+One button runs the real thing. Same agent, same live calls, nothing recorded.
