@@ -16,13 +16,13 @@ Built for the [Agents for Humans Hackathon](https://agentsforhumans.devpost.com/
 
 ## Try it in 90 seconds
 
-Open the live demo and stay as **Amal · Coordinator**:
+Open the live demo and press **Play the whole story**. One button runs the five steps below against the live agent — same API calls a person makes, nothing recorded — in about 45 seconds. To drive it yourself instead, stay as **Amal · Coordinator**:
 
 1. The agent reads three sources and the page settles on **“One thing is still missing.”** `$1,200` of the `$1,260` reported spending has a receipt behind it; `$60` does not. It has already asked Rana in Finance — **once**.
 2. Switch to **Rana · Finance** (top-right). Answer the question by **uploading a photo of a receipt** — any receipt image works, or use the sample. Amazon Nova Pro transcribes it and the transcription becomes the source text, so only an amount actually printed on the paper can enter the ledger.
 3. Back as Amal: spending is now fully supported and **version 2** is ready. Approve it. Both donor inboxes receive it, each with its own delivery receipt. Open **Northstar Foundation** to read exactly what was sent.
 4. Switch to **Sami · Field team** and send a correction: *“Correction: we recounted at the warehouse. 88 baskets were delivered, not 92.”*
-5. Back as Amal: the figures move, **version 3** is drafted, the arithmetic gap is stated plainly (*88 delivered + 8 returned vs 100 loaded — 4 unaccounted for*), and the approval bound to version 2 is **refused** rather than silently reused.
+5. Back as Amal: the figures move, **version 3** is drafted, and the gap is stated as what it means for people — *“4 baskets unaccounted for: 100 loaded, 88 reported delivered, 8 returned. 4 households were on the list with no answer either way.”* The approval bound to version 2 is **refused** rather than silently reused.
 
 Everything above is the running agent; nothing is scripted or pre-recorded.
 
@@ -92,14 +92,18 @@ docs/          architecture, submission text, evaluation notes
 
 ## What we measured
 
-Four consecutive end-to-end runs of the full journey against the deployed app produced identical figures at every step (`$1,200/$60` → photograph read → `$1,260/$0` → delivered → correction → `88` + stated gap → stale approval refused), with zero streaming errors. The agent's review takes 5–8 seconds and 8–22k input tokens per cycle.
+Seven consecutive end-to-end journeys, three of them instrumented, produced **identical outcomes at every step**: 27.4 s wall clock, three agent cycles, one question asked exactly once, the photograph closing the gap, `$1,260` supported and `$0` undocumented, `88` delivered after the correction, two donor deliveries with receipts, and **HTTP 409** when the approval bound to the delivered version was tried again. Zero streaming errors.
+
+`tests/test_adversarial.py` puts 24 deliberate defects in front of the guards — invented amounts, counts absent from their source, three prompt injections inside field evidence, a receipt whose lines disagree with its total, a household count sitting next to a denial. All pass, and one of them **found a real defect** in our own household guard before a judge could.
+
+Full numbers, method and the things we deliberately did not measure: [`docs/EVALUATION.md`](docs/EVALUATION.md).
 
 Known limits, stated rather than hidden:
 
 - Amazon Nova Pro transcribes printed Latin-script receipts exactly in our fixtures and catches a planted total mismatch. It mistranscribes Arabic wording, so the prompt asks for Latin-script text and returns null instead of guessing. This is a measured limitation, not a claim of general OCR accuracy.
 - Nova Pro sometimes does not ask the follow-up question on its own. That is why the follow-up is checked in code after the model's turn and handed back once — the promise does not depend on the model remembering.
 - Delivery here means delivery to a recipient inbox inside this application, with a stored receipt. It is not an email receipt, a read receipt, or evidence that aid reached a household.
-- No real organisation has used this. There is no pilot, no donor endorsement, and no claim of money saved or recovered.
+- **No human baseline was timed**, so this project claims no hours or money saved. No real organisation has used it; there is no pilot and no donor endorsement.
 
 ## Disclosure
 

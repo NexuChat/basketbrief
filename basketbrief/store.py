@@ -52,6 +52,28 @@ WORD_NUMBERS = {
 }
 
 
+HOUSEHOLD_WORD = re.compile(r"household|famil|أسر|اسر|عائل", re.I)
+NEGATION = re.compile(r"\b(not|never|no|haven't|have not|didn't|did not|unknown|unable)\b|لم|لا\s|غير", re.I)
+
+
+def states_household_count(text, value):
+    """True only when the source actually claims that many households.
+
+    The first version of this guard looked for the word "household" anywhere in the
+    source. The seeded field message says "We have NOT counted unique households",
+    which contains the word — so a basket count could have been recorded as a
+    household count. The window now has to carry the number and no negation.
+    """
+    text = text.translate(str.maketrans("٠١٢٣٤٥٦٧٨٩", "0123456789"))
+    for match in HOUSEHOLD_WORD.finditer(text):
+        window = text[max(0, match.start() - 70): match.end() + 70]
+        if NEGATION.search(window):
+            continue
+        if re.search(rf"(?<!\d){int(value)}(?!\d)", window):
+            return True
+    return False
+
+
 def numeric_values(text):
     """Every number a source states — digits, or a written word. Nothing derived."""
     text = text.translate(str.maketrans("٠١٢٣٤٥٦٧٨٩٫٬", "0123456789.,"))
@@ -237,8 +259,9 @@ class Store:
                 if type(v) is not int or not 0 <= v <= 10000 or Decimal(v) not in numbers:
                     ignored[key] = "not stated in this source"
                     vals[key] = None
-                elif key == "households" and not re.search(r"household|famil|أسر|اسر|عائل", e["text"], re.I):
-                    ignored[key] = "basket counts do not establish unique households"
+                elif key == "households" and not states_household_count(e["text"], v):
+                    ignored[key] = ("the source does not state a household count; "
+                                    "basket counts do not establish unique households")
                     vals[key] = None
             loaded, delivered, returned, households = (vals["loaded"], vals["delivered"],
                                                        vals["returned"], vals["households"])
@@ -255,10 +278,20 @@ class Store:
             if all(isinstance(merged.get(k), int) for k in ("loaded", "delivered", "returned")):
                 missing = merged["loaded"] - merged["delivered"] - merged["returned"]
                 if missing:
-                    word = "unaccounted for" if missing > 0 else "more than were loaded"
-                    gap = (f"Counts do not reconcile: {merged['delivered']} delivered + "
-                           f"{merged['returned']} returned vs {merged['loaded']} loaded — "
-                           f"{abs(missing)} {word}.")
+                    # The arithmetic is the easy half. What it means is that some
+                    # households on the list have no answer, and the report says so
+                    # in those words rather than hiding behind a sum.
+                    n = abs(missing)
+                    if missing > 0:
+                        gap = (f"{n} basket{'s' if n != 1 else ''} unaccounted for: "
+                               f"{merged['loaded']} loaded, {merged['delivered']} reported "
+                               f"delivered, {merged['returned']} returned. "
+                               f"{n} household{'s were' if n != 1 else ' was'} on the list "
+                               f"with no answer either way.")
+                    else:
+                        gap = (f"{merged['delivered']} delivered plus {merged['returned']} "
+                               f"returned is {n} more than the {merged['loaded']} loaded. "
+                               f"One of these counts is wrong.")
             if gap:
                 c.execute("UPDATE evidence SET status='review',note=? WHERE id=?", (gap, eid))
                 self.event(c, pid, "review", "An uncertainty stays visible", {"evidence_id": eid, "reason": gap})
@@ -385,7 +418,7 @@ class Store:
             payload = {"title": "September food distribution", "period": "September 2026 · Demonstration",
                        "summary": summary, "facts": f, "issues": issues,
                        "recipients": ["donor_a", "donor_b"], "synthetic": True,
-                       "disclosure": "Synthetic scenario. Delivery counts are field-reported, not independently verified. Receipt-supported spending is not proof of payment or impact."}
+                       "disclosure": "Synthetic scenario. Delivery counts are field-reported, not independently verified — a basket counted as delivered is not proof that a household received it. Receipt-supported spending is not proof of payment or impact."}
             h = digest(pack(payload))
             last = c.execute("SELECT * FROM reports WHERE project=? ORDER BY version DESC LIMIT 1", (pid,)).fetchone()
             if last and last["hash"] == h and last["revision"] == revision:

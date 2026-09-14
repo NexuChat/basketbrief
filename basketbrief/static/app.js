@@ -188,8 +188,8 @@ function storyline(s) {
     body:'Every new source is being read, recorded against the figures, and reconciled into both donor drafts.', tone:'working'};
   if (s.jobs.find(j => j.status === 'failed')) return {eyebrow:'SEPTEMBER DISTRIBUTION · PAUSED', head:'The review<br><em>paused safely.</em>',
     body:'Nothing was lost. Your evidence is saved exactly as it arrived, and the review can be run again.', tone:'warn'};
-  if (supersededBy) return {eyebrow:'SEPTEMBER DISTRIBUTION · CORRECTION ARRIVED', head:'A correction<br><em>changed the figures.</em>',
-    body:`Version ${supersededBy.version - 1} is already with your donors. A later correction moved the numbers, so your old approval no longer applies — version ${supersededBy.version} is waiting for you.`, tone:'warn'};
+  if (supersededBy) return {eyebrow:'SEPTEMBER DISTRIBUTION · CORRECTION ARRIVED', head:'Four households<br><em>with no answer.</em>',
+    body:`Version ${supersededBy.version - 1} is already with your donors. A later correction moved the counts, and the baskets no longer add up — so the approval bound to the old version was refused and version ${supersededBy.version} is waiting for you.`, tone:'warn'};
   if (open.length) return {eyebrow:'SEPTEMBER DISTRIBUTION · ONE GAP', head:'One thing<br><em>is still missing.</em>',
     body:`BasketBrief asked ${esc(names[open[0].recipient])} for it directly, once. The answer will update both donor reports.`, tone:'warn'};
   if (r && r.status === 'delivered') return {eyebrow:'SEPTEMBER DISTRIBUTION · DELIVERED', head:'Accounted for.<br><em>And in their hands.</em>',
@@ -242,7 +242,7 @@ function nextStep(s) {
   else if (open.length) { stageIndex = 1; const q = open[0];
     content = `<h2>Asked once.<br>Not asked again.</h2><p>BasketBrief went straight to ${esc(names[q.recipient])} — the person who has it — instead of routing it through you. One answer updates both donor reports.</p><div class="question-bubble"><div class="person"><span class="avatar">${esc(names[q.recipient][0])}</span>${esc(names[q.recipient])} · ${q.recipient==='finance'?'Finance':'Field team'}</div><p>${esc(q.text)}</p></div><button class="button secondary full" data-role="${q.recipient}">Answer as ${esc(names[q.recipient])} <span>↗</span></button>`; }
   else if (r && r.status !== 'delivered' && deliveredCount) { stageIndex = 2;
-    content = `<h2>Your approval<br>no longer fits.</h2><p>A correction arrived after version ${r.version-1} was delivered. The figures moved, so the approval bound to the old version was refused and version ${r.version} is waiting.</p>${issueList(r)}<button class="button full" data-action="approve">Approve version ${r.version} and send the correction <span>↗</span></button>${ackBox(r)}`; }
+    content = `<h2>Some households<br>have no answer.</h2><p>A correction arrived after version ${r.version-1} was delivered. The baskets stopped adding up, so the approval bound to the old version was refused. Nothing goes to a donor until you have seen what changed.</p>${issueList(r)}<button class="button full" data-action="approve">Approve version ${r.version} and send the correction <span>↗</span></button>${ackBox(r)}`; }
   else if (r && r.status === 'delivered') { stageIndex = 3;
     content = `<h2>Accounted for.<br>And in the right hands.</h2><p>Version ${r.version} sits in both donor inboxes. Approval and delivery are recorded against this exact content hash.</p><button class="button full" data-role="donor_a">Open Northstar’s copy <span>↗</span></button><div class="step-foot">✓ ${deliveredCount} inbox deliveries · approved on version ${r.version}</div>`; }
   else if (r && r.status !== 'outdated') { stageIndex = 2;

@@ -20,7 +20,8 @@ Food receipts describe food spending. A transport expense claim is reported spen
 support; a transport RECEIPT supports it. USD only. Never add an invented exchange rate.
 Amounts must appear in the source. A missing receipt cannot become a receipt by wishful thinking.
 Loaded baskets, delivered baskets, returned baskets and unique households differ. Leave unmentioned
-counts null. Returned inventory is not a refund. Never infer household counts from baskets.
+counts null. When the counts do not add up, say what it means for people: baskets that are neither
+delivered nor returned are households that were on the list and have no answer either way. Returned inventory is not a refund. Never infer household counts from baskets.
 When an explicit correction arrives, record ONLY the new counts it states, with its own evidence id;
 do not rerecord older sources and never derive a number the correction does not state.
 If the corrected counts no longer add up, record them anyway and move on: the system surfaces
