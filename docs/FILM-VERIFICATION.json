@@ -22,6 +22,20 @@
     "browser_playback": "passed; 1920x1080; captions loaded; no JavaScript errors"
   },
   "captions": "English VTT and SRT; phrase timing estimated",
-  "published_to_youtube_or_vimeo": false,
-  "edit": "Product and participants introduced before the chronological demonstration; later count update explicitly placed within that example"
+  "edit": "Product and participants introduced before the chronological demonstration; later count update explicitly placed within that example",
+  "youtube_url": "https://www.youtube.com/watch?v=fgexXunqKa8",
+  "youtube_checks": {
+    "title": "matches the agreed title",
+    "thumbnail": "matches the dedicated cover",
+    "playback": "blocked on review machine by YouTube bot sign-in gate",
+    "public_visibility": "awaiting owner confirmation",
+    "description": "owner asked to remove unrelated hashtags inserted inside fictional"
+  },
+  "devpost_submission": {
+    "id": 1182239,
+    "status": "Submitted",
+    "video_url": "https://www.youtube.com/watch?v=fgexXunqKa8",
+    "public_page_embed_verified": true
+  },
+  "uploaded_to_youtube_or_vimeo": true
 }
