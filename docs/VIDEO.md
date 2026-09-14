@@ -15,8 +15,8 @@ Then explain the person and problem, show the receipt follow-up and first delive
 | Beat | Picture | Voiceover |
 |---|---|---|
 | 1 | Amendment table: delivered 92 → 88, returned 8 → 12 | The report was already with both donors. Then the count changed. BasketBrief followed through. |
-| 2 | Problem card | Small aid groups lose hours chasing receipts, reconciling field messages, and keeping donor reports consistent. |
-| 3 | Who card: Amal, Rana, Sami, two donors | Amal coordinates the work. The receipt is with Rana. The distribution count is with Sami. Two donors need the same evidence. |
+| 2 | Problem card | For a small aid group, the report is not the hard part. The handoffs are. A late correction can leave two donors holding numbers nobody has reconciled. |
+| 3 | Who card: Amal, Rana, Sami, two donors | BasketBrief is for Amal, a coordinator. Rana has the receipt. Sami has the counts. The agent carries one evidence trail across both donors. |
 | 4 | Fresh workspace, three sources | BasketBrief is a Strands agent that owns the follow-up work. |
 | 5 | Missing receipt question in Rana's inbox | It finds sixty dollars without a receipt and asks the person who can resolve it. One answer serves both reports. |
 | 6 | Receipt image and transcription | Nova Pro reads the synthetic receipt through AgentCore Runtime. The original image stays available for human review. |
@@ -25,9 +25,9 @@ Then explain the person and problem, show the receipt follow-up and first delive
 | 9 | Four-kit discrepancy and question to Sami | Four kits are now unaccounted for. That does not tell us how many households were affected, so BasketBrief asks Sami to check the records. |
 | 10 | Sami answers returned=12; issue closes | Sami confirms twelve returned. The figures reconcile without inventing impact. |
 | 11 | Before/after table and both donor amendments | Amal sees both changes, approves the amendment, and each donor receives the new snapshot beside the original. |
-| 12 | Architecture card | Nova Pro chooses tools. Code owns typed facts, arithmetic, roles, follow-up delivery, report versions, and approval validity. AgentCore Runtime reads images; AgentCore Memory carries an advisory vendor history. |
+| 12 | Architecture card | Strands and Nova choose tools. AgentCore Runtime reads images, Memory carries vendor history, and deterministic code owns facts, roles, follow-ups, and approval validity. |
 | 13 | Evidence card | Seventy-six tests pass. Three consecutive live staging journeys completed in sixty-three to sixty-six seconds with four donor snapshots and no browser errors. |
-| 14 | Scope/end card | The scenario is fictional. We measured system behavior, not human time or aid impact. BasketBrief: the report was sent, then the count changed, and the work still got finished. |
+| 14 | Scope/end card | Fictional participants. A live system. BasketBrief keeps the follow-up moving and every correction visible, so the people doing the work can stay with the work. |
 
 ## Required visual proof
 

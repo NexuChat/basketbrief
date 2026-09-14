@@ -1,5 +1,7 @@
 # BasketBrief
 
+![BasketBrief — the report changed and the agent followed through](docs/devpost-cover.png)
+
 **The report was sent. Then the count changed. BasketBrief follows through.**
 
 A volunteer relief coordinator owes two donors a report. Receipts sit with one person, distribution counts with another. BasketBrief reads the sources, asks the responsible contributor for missing evidence, prepares the reports, and delivers the coordinator-approved version to both donor inboxes.

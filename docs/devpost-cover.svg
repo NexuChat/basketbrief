@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1000" viewBox="0 0 1500 1000">
+  <defs>
+    <pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse">
+      <path d="M100 0H0V100" fill="none" stroke="#f1ecdf" stroke-opacity=".035"/>
+    </pattern>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientTransform="translate(170 80) rotate(35) scale(850 620)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff6b2c" stop-opacity=".15"/>
+      <stop offset="1" stop-color="#11110f" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1500" height="1000" fill="#11110f"/>
+  <rect width="1500" height="1000" fill="url(#glow)"/>
+  <rect width="1500" height="1000" fill="url(#grid)"/>
+
+  <g font-family="IBM Plex Mono, monospace" letter-spacing="5">
+    <rect x="86" y="76" width="382" height="48" rx="24" fill="none" stroke="#ff8a55"/>
+    <text x="110" y="108" font-size="18" font-weight="600" fill="#ff9d70">GOOD NEIGHBOR AGENT</text>
+  </g>
+
+  <g font-family="Bricolage Grotesque, IBM Plex Sans, sans-serif" font-weight="800" letter-spacing="-6">
+    <text x="82" y="286" font-size="118" fill="#f1ecdf">THE REPORT</text>
+    <text x="82" y="397" font-size="118" fill="none" stroke="#ff8a55" stroke-width="2">CHANGED.</text>
+  </g>
+  <text x="88" y="475" font-family="IBM Plex Sans, sans-serif" font-size="31" fill="#aaa395">BasketBrief kept the evidence moving until both donors</text>
+  <text x="88" y="517" font-family="IBM Plex Sans, sans-serif" font-size="31" fill="#aaa395">received the approved correction.</text>
+
+  <g transform="translate(86 608)">
+    <rect width="786" height="202" rx="22" fill="#1a1a16" stroke="#3d3c34"/>
+    <text x="30" y="43" font-family="IBM Plex Mono, monospace" font-size="16" letter-spacing="4" fill="#7d786c">AMENDMENT TO VERSION 2</text>
+    <text x="30" y="88" font-family="IBM Plex Sans, sans-serif" font-size="25" font-weight="600" fill="#f1ecdf">Delivered kits</text>
+    <text x="506" y="88" font-family="IBM Plex Mono, monospace" font-size="27" fill="#7d786c">92</text>
+    <path d="M557 79h72" stroke="#ff6b2c" stroke-width="3"/>
+    <path d="m630 79-13-8v16z" fill="#ff6b2c"/>
+    <text x="674" y="88" font-family="IBM Plex Mono, monospace" font-size="31" font-weight="700" fill="#f1ecdf">88</text>
+    <path d="M30 111h726" stroke="#f1ecdf" stroke-opacity=".1"/>
+    <text x="30" y="160" font-family="IBM Plex Sans, sans-serif" font-size="25" font-weight="600" fill="#f1ecdf">Returned kits</text>
+    <text x="506" y="160" font-family="IBM Plex Mono, monospace" font-size="27" fill="#7d786c">8</text>
+    <path d="M557 151h72" stroke="#c6f36b" stroke-width="3"/>
+    <path d="m630 151-13-8v16z" fill="#c6f36b"/>
+    <text x="674" y="160" font-family="IBM Plex Mono, monospace" font-size="31" font-weight="700" fill="#c6f36b">12</text>
+  </g>
+
+  <g transform="translate(982 166)">
+    <circle cx="177" cy="177" r="176" fill="#c6f36b"/>
+    <g transform="translate(9 9) scale(8.4)" fill="none" stroke="#193e33" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 18h22l-3 13H12L9 18Zm5 0 6-10 6 10M8 18h24M17 23v4m6-4v4"/>
+    </g>
+    <text x="177" y="404" text-anchor="middle" font-family="Bricolage Grotesque, IBM Plex Sans, sans-serif" font-size="51" font-weight="800" fill="#f1ecdf">BasketBrief</text>
+    <text x="177" y="447" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="17" letter-spacing="4" fill="#aaa395">FOLLOWS THROUGH</text>
+    <g transform="translate(58 494)" font-family="IBM Plex Mono, monospace" font-size="18" font-weight="600">
+      <rect width="104" height="50" rx="25" fill="#1a1a16" stroke="#4f4d43"/>
+      <text x="52" y="32" text-anchor="middle" fill="#f1ecdf">EN</text>
+      <rect x="136" width="104" height="50" rx="25" fill="#1a1a16" stroke="#4f4d43"/>
+      <text x="188" y="32" text-anchor="middle" fill="#f1ecdf">AR</text>
+    </g>
+  </g>
+
+  <path d="M86 888h1328" stroke="#f1ecdf" stroke-opacity=".13"/>
+  <text x="86" y="938" font-family="IBM Plex Mono, monospace" font-size="18" letter-spacing="2" fill="#8d887c">STRANDS AGENTS SDK · AMAZON BEDROCK · AGENTCORE RUNTIME + MEMORY</text>
+</svg>
