@@ -2,7 +2,7 @@
 
 Everything below was observed on the deployed application at `basketbrief.mlki.app`, running the real agent on Amazon Bedrock. Where we did not measure something, this file says so instead of estimating it.
 
-Measured 2026-09-14. Reproduce with `scripts/measure.py` (journeys) and `pytest tests/test_adversarial.py` (defects).
+Measured 2026-09-14. 55 tests, 30 of them adversarial. Reproduce with `scripts/measure.py` (journeys) and `pytest tests/test_adversarial.py` (defects).
 
 ---
 
@@ -87,7 +87,7 @@ The reader runs on **Amazon Bedrock AgentCore Runtime**, deployed from `runtime/
 
 ## 5. The vendor ledger
 
-`tests/test_adversarial.py` cases 25–29, and one live check against the deployed memory:
+`tests/test_adversarial.py` vendor-ledger cases, and one live check against the deployed memory:
 
 | Attempt | Expected | Result |
 |---|---|---|
