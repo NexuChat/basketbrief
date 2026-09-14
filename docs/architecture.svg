@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1680" height="1040" viewBox="0 0 1680 1040" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="a" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#2f4438"/></marker>
+    <marker id="g" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#9a5c20"/></marker>
+  </defs>
+  <rect width="1680" height="1040" fill="#f8f8f2"/>
+
+  <text x="56" y="58" font-size="30" font-weight="700" fill="#193e33" font-family="Georgia, serif">BasketBrief — architecture</text>
+  <text x="56" y="88" font-size="16" fill="#5c6a5c">A Strands agent chases the missing evidence, recalculates in code, and delivers an approved report to each donor. The model interprets; the code decides what is allowed.</text>
+
+  <!-- people / inputs -->
+  <rect x="56" y="126" width="286" height="196" rx="14" fill="#fffefb" stroke="#dfe4d6" stroke-width="2"/>
+  <text x="78" y="160" font-size="18" font-weight="700" fill="#193e33">Contributors</text>
+  <text x="78" y="186" font-size="14" fill="#5c6a5c">Rana · Finance — receipts, expense claims,</text>
+  <text x="78" y="206" font-size="14" fill="#5c6a5c">and receipt photographs</text>
+  <text x="78" y="230" font-size="14" fill="#5c6a5c">Sami · Field team — delivery counts</text>
+  <text x="78" y="250" font-size="14" fill="#5c6a5c">and later corrections</text>
+  <text x="78" y="278" font-size="13" fill="#8a9487">Each has a role-scoped capability link;</text>
+  <text x="78" y="296" font-size="13" fill="#8a9487">nobody can answer or approve as another.</text>
+
+  <rect x="56" y="352" width="286" height="150" rx="14" fill="#fffefb" stroke="#dfe4d6" stroke-width="2"/>
+  <text x="78" y="386" font-size="18" font-weight="700" fill="#193e33">Amal · Coordinator</text>
+  <text x="78" y="412" font-size="14" fill="#5c6a5c">One page: the figures, the sources behind</text>
+  <text x="78" y="432" font-size="14" fill="#5c6a5c">them, what is unresolved, and the single</text>
+  <text x="78" y="452" font-size="14" fill="#5c6a5c">decision that is hers — approve this version.</text>
+  <text x="78" y="480" font-size="13" fill="#8a9487">She is not asked to relay messages.</text>
+
+  <rect x="56" y="532" width="286" height="132" rx="14" fill="#fffefb" stroke="#dfe4d6" stroke-width="2"/>
+  <text x="78" y="566" font-size="18" font-weight="700" fill="#193e33">Worker</text>
+  <text x="78" y="592" font-size="14" fill="#5c6a5c">New evidence queues a job. Before the</text>
+  <text x="78" y="612" font-size="14" fill="#5c6a5c">agent runs, every attached photograph</text>
+  <text x="78" y="632" font-size="14" fill="#5c6a5c">is transcribed — never a model choice.</text>
+
+  <!-- vision -->
+  <rect x="56" y="694" width="286" height="150" rx="14" fill="#eef4e4" stroke="#b9cfa6" stroke-width="2"/>
+  <text x="78" y="728" font-size="18" font-weight="700" fill="#193e33">Amazon Nova Pro · vision</text>
+  <text x="78" y="754" font-size="14" fill="#4a6a4d">Reads the receipt photograph → typed fields</text>
+  <text x="78" y="774" font-size="14" fill="#4a6a4d">Code adds the line items up against the</text>
+  <text x="78" y="794" font-size="14" fill="#4a6a4d">printed total; a disagreement is surfaced,</text>
+  <text x="78" y="814" font-size="14" fill="#4a6a4d">never corrected. Transcription = source text.</text>
+
+  <!-- the agent -->
+  <rect x="400" y="126" width="620" height="718" rx="18" fill="#fff9ec" stroke="#d9a441" stroke-width="3"/>
+  <text x="428" y="166" font-size="22" font-weight="700" fill="#193e33">Strands Agents SDK — the BasketBrief agent</text>
+  <text x="428" y="192" font-size="14" fill="#5c6a5c">model → reasoning → tool call → tool result → … → a short account for the coordinator</text>
+
+  <rect x="428" y="212" width="564" height="72" rx="11" fill="#fffefb" stroke="#e3cb96" stroke-width="2"/>
+  <text x="450" y="242" font-size="17" font-weight="700" fill="#193e33">Amazon Bedrock · Amazon Nova Pro</text>
+  <text x="450" y="266" font-size="13" fill="#5c6a5c">BedrockModel · us.amazon.nova-pro-v1:0 · temperature 0 · sequential tools · budget hook</text>
+
+  <text x="428" y="316" font-size="15" font-weight="700" fill="#8a5a00">The agent chooses the next tool</text>
+  <g font-size="13.5" fill="#243b31">
+    <rect x="428" y="330" width="272" height="40" rx="9" fill="#fffefb" stroke="#e3cb96"/><text x="444" y="355">read_pending_evidence</text>
+    <rect x="720" y="330" width="272" height="40" rx="9" fill="#fffefb" stroke="#e3cb96"/><text x="736" y="355">inspect_workspace</text>
+    <rect x="428" y="380" width="272" height="40" rx="9" fill="#fffefb" stroke="#e3cb96"/><text x="444" y="405">record_expense</text>
+    <rect x="720" y="380" width="272" height="40" rx="9" fill="#fffefb" stroke="#e3cb96"/><text x="736" y="405">record_distribution</text>
+    <rect x="428" y="430" width="272" height="40" rx="9" fill="#fff1d6" stroke="#9a5c20" stroke-width="2"/><text x="444" y="455" font-weight="600">ask_contributor → one question</text>
+    <rect x="720" y="430" width="272" height="40" rx="9" fill="#fffefb" stroke="#e3cb96"/><text x="736" y="455">defer_evidence → stays visible</text>
+    <rect x="428" y="480" width="564" height="40" rx="9" fill="#fff1d6" stroke="#9a5c20" stroke-width="2"/><text x="444" y="505" font-weight="600">prepare_donor_reports → one draft per donor, from stored facts only</text>
+  </g>
+
+  <rect x="428" y="540" width="564" height="128" rx="12" fill="#fffefb" stroke="#9a5c20" stroke-width="2"/>
+  <text x="450" y="568" font-size="15" font-weight="700" fill="#8a5a00">Guards that live in code, not in the prompt</text>
+  <text x="450" y="592" font-size="13" fill="#5c6a5c">· An amount is recordable only if it literally appears in that source's text.</text>
+  <text x="450" y="612" font-size="13" fill="#5c6a5c">· A field the source does not state is dropped — it never costs the counts the source does state.</text>
+  <text x="450" y="632" font-size="13" fill="#5c6a5c">· Baskets loaded, delivered, returned and unique households are four different facts.</text>
+  <text x="450" y="652" font-size="13" fill="#5c6a5c">· Source text is untrusted data: an instruction inside a message is evidence, not a command.</text>
+
+  <rect x="428" y="688" width="564" height="130" rx="12" fill="#eef4e4" stroke="#b9cfa6" stroke-width="2"/>
+  <text x="450" y="716" font-size="15" font-weight="700" fill="#2f5c3c">Follow-up gate — after the model's turn</text>
+  <text x="450" y="740" font-size="13" fill="#4a6a4d">Code recomputes the known gaps: unsupported spending, or a missing delivery count.</text>
+  <text x="450" y="760" font-size="13" fill="#4a6a4d">If one has no open question, the agent is handed it once and asks in its own words.</text>
+  <text x="450" y="780" font-size="13" fill="#4a6a4d">The promise "it follows up" therefore does not depend on the model remembering to.</text>
+  <text x="450" y="802" font-size="13" fill="#4a6a4d">A question already open is never asked a second time.</text>
+
+  <!-- state / outputs -->
+  <rect x="1078" y="126" width="546" height="222" rx="14" fill="#fffefb" stroke="#dfe4d6" stroke-width="2"/>
+  <text x="1100" y="160" font-size="18" font-weight="700" fill="#193e33">State — SQLite, versioned</text>
+  <text x="1100" y="188" font-size="14" fill="#5c6a5c">evidence (immutable, with its transcription) · facts, each pinned to the</text>
+  <text x="1100" y="208" font-size="14" fill="#5c6a5c">source that stated it · questions · report versions with a content hash ·</text>
+  <text x="1100" y="228" font-size="14" fill="#5c6a5c">approvals · delivery intents · receipts · an append-only event log</text>
+  <text x="1100" y="258" font-size="13" fill="#8a9487">Every number the coordinator and the donors see is read from here.</text>
+  <text x="1100" y="278" font-size="13" fill="#8a9487">Report prose is written by the model; report figures never are.</text>
+  <text x="1100" y="306" font-size="14" fill="#5c6a5c">A new source bumps the project revision, which marks dependent</text>
+  <text x="1100" y="326" font-size="14" fill="#5c6a5c">drafts outdated and invalidates approvals bound to the old version.</text>
+
+  <rect x="1078" y="378" width="546" height="176" rx="14" fill="#fff9ec" stroke="#d9a441" stroke-width="2"/>
+  <text x="1100" y="412" font-size="18" font-weight="700" fill="#193e33">Approval — the only human gate</text>
+  <text x="1100" y="440" font-size="14" fill="#5c6a5c">The coordinator approves one exact version: report id + content hash +</text>
+  <text x="1100" y="460" font-size="14" fill="#5c6a5c">revision + recipients. Unresolved items must be acknowledged explicitly.</text>
+  <text x="1100" y="488" font-size="14" fill="#8a5a00">If evidence changed in between, the approval is refused —</text>
+  <text x="1100" y="508" font-size="14" fill="#8a5a00">it cannot be reused for a version the coordinator never read.</text>
+  <text x="1100" y="536" font-size="13" fill="#8a9487">Nothing reaches a donor without passing this check at dispatch time.</text>
+
+  <rect x="1078" y="584" width="546" height="152" rx="14" fill="#fffefb" stroke="#dfe4d6" stroke-width="2"/>
+  <text x="1100" y="618" font-size="18" font-weight="700" fill="#193e33">Donors — role-scoped inboxes</text>
+  <text x="1100" y="646" font-size="14" fill="#5c6a5c">Northstar Foundation (English) · Community Giving Circle (Arabic)</text>
+  <text x="1100" y="670" font-size="14" fill="#5c6a5c">Each receives the approved snapshot with its own delivery receipt and</text>
+  <text x="1100" y="690" font-size="14" fill="#5c6a5c">can open only what was delivered to them — never another donor's copy,</text>
+  <text x="1100" y="710" font-size="14" fill="#5c6a5c">and never a later draft that silently replaced what they read.</text>
+
+  <rect x="1078" y="766" width="546" height="78" rx="14" fill="#eef4e4" stroke="#b9cfa6" stroke-width="2"/>
+  <text x="1100" y="798" font-size="17" font-weight="700" fill="#2f5c3c">Live demo</text>
+  <text x="1100" y="822" font-size="13.5" fill="#4a6a4d">basketbrief.mlki.app · FastAPI + Cloudflare Tunnel · a fresh fictional workspace per visitor</text>
+
+  <!-- arrows -->
+  <g stroke="#2f4438" stroke-width="2.4" fill="none" marker-end="url(#a)">
+    <path d="M342,224 L398,300"/>
+    <path d="M342,598 L398,470"/>
+    <path d="M342,760 L398,700"/>
+    <path d="M1020,250 L1074,220"/>
+    <path d="M1020,500 L1074,440"/>
+  </g>
+  <g stroke="#9a5c20" stroke-width="2.4" fill="none" marker-end="url(#g)">
+    <path d="M1350,742 V884 H372 V300 H396" stroke-dasharray="7 5"/>
+  </g>
+  <text x="420" y="906" font-size="13" fill="#8a5a00">a correction re-enters as new evidence: facts move, dependent reports redraft, the old approval stops working</text>
+  
+
+  <text x="56" y="944" font-size="15" font-weight="700" fill="#193e33">One cycle, end to end</text>
+  <text x="56" y="968" font-size="14" fill="#5c6a5c">new evidence → photographs transcribed by Nova Pro → agent reads, records or defers each source → inspects the workspace → asks the one person who has the gap → drafts both donor reports</text>
+  <text x="56" y="990" font-size="14" fill="#5c6a5c">→ follow-up gate verifies nothing was left unasked → coordinator approves one exact version → delivered to each donor inbox with a receipt → a later correction starts the cycle again</text>
+  <text x="56" y="1014" font-size="12.5" fill="#8a9487">AWS services used: Amazon Bedrock (Nova Pro, text and vision). All organisations, people, receipts and figures in the demo are fictional. Agents for Humans Hackathon · Good Neighbor Agents.</text>
+</svg>
