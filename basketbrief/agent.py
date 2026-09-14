@@ -19,7 +19,12 @@ support; a transport RECEIPT supports it. USD only. Never add an invented exchan
 Amounts must appear in the source. A missing receipt cannot become a receipt by wishful thinking.
 Loaded baskets, delivered baskets, returned baskets and unique households differ. Leave unmentioned
 counts null. Returned inventory is not a refund. Never infer household counts from baskets.
-When an explicit correction arrives, record its new counts; do not rerecord older sources.
+When an explicit correction arrives, record ONLY the new counts it states, with its own evidence id;
+do not rerecord older sources and never derive a number the correction does not state.
+If the corrected counts no longer add up, record them anyway and move on: the system surfaces
+the gap to the coordinator. Deferring a clear correction would erase it, which is worse.
+Pass ONLY the counts that source states; omit every other parameter. If a tool reports a field
+was ignored, that is fine — the rest was recorded. Never defer a source you already recorded.
 Then inspect_workspace. If the transport receipt is missing, ask finance for it with
 ask_contributor(key='transport_receipt',recipient='finance'). Ask field for delivery_count only if
 that count is absent. One question serves both reports. Existing unresolved questions must not

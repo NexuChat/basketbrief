@@ -41,9 +41,26 @@ def money(value):
         raise Conflict("Use a non-negative amount with at most two decimal places.")
 
 
+WORD_NUMBERS = {
+    "zero": 0, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7,
+    "eight": 8, "nine": 9, "ten": 10, "eleven": 11, "twelve": 12, "thirteen": 13,
+    "fourteen": 14, "fifteen": 15, "sixteen": 16, "seventeen": 17, "eighteen": 18,
+    "nineteen": 19, "twenty": 20, "thirty": 30, "forty": 40, "fifty": 50,
+    "صفر": 0, "واحد": 1, "واحدة": 1, "اثنان": 2, "اثنين": 2, "ثلاث": 3, "ثلاثة": 3,
+    "أربع": 4, "اربع": 4, "أربعة": 4, "اربعة": 4, "خمس": 5, "خمسة": 5, "ست": 6, "ستة": 6,
+    "سبع": 7, "سبعة": 7, "ثمان": 8, "ثمانية": 8, "تسع": 9, "تسعة": 9, "عشر": 10, "عشرة": 10,
+}
+
+
 def numeric_values(text):
+    """Every number a source states — digits, or a written word. Nothing derived."""
     text = text.translate(str.maketrans("٠١٢٣٤٥٦٧٨٩٫٬", "0123456789.,"))
-    return {Decimal(n.replace(",", "")) for n in re.findall(r"\d[\d,]*(?:\.\d+)?", text)}
+    found = {Decimal(n.replace(",", "")) for n in re.findall(r"\d[\d,]*(?:\.\d+)?", text)}
+    for word in re.findall(r"[A-Za-z\u0600-\u06FF]+", text):
+        value = WORD_NUMBERS.get(word.lower())
+        if value is not None:
+            found.add(Decimal(value))
+    return found
 
 
 class Store:
@@ -211,24 +228,50 @@ class Store:
             if e["status"] == "accepted":
                 return {"recorded": False}
             numbers = numeric_values(e["text"])
-            for key, v in vals.items():
-                if v is not None:
-                    if type(v) is not int or not 0 <= v <= 10000 or Decimal(v) not in numbers:
-                        raise Conflict(f"{key} must be an explicit non-negative count in the source.")
-            previous = self.facts(c, pid)
-            total = loaded if loaded is not None else previous.get("loaded", {}).get("value")
-            if delivered is not None and returned is not None and total is not None and delivered + returned != total:
-                raise Conflict("Delivered and returned counts do not reconcile with loaded baskets.")
-            if households is not None and not re.search(r"household|famil|أسر|اسر|عائل", e["text"], re.I):
-                raise Conflict("Basket counts do not establish unique households.")
+            # A field the source does not state is dropped, never recorded and never fatal:
+            # losing one unsupported number must not cost us the counts the source does state.
+            ignored = {}
+            for key, v in list(vals.items()):
+                if v is None:
+                    continue
+                if type(v) is not int or not 0 <= v <= 10000 or Decimal(v) not in numbers:
+                    ignored[key] = "not stated in this source"
+                    vals[key] = None
+                elif key == "households" and not re.search(r"household|famil|أسر|اسر|عائل", e["text"], re.I):
+                    ignored[key] = "basket counts do not establish unique households"
+                    vals[key] = None
+            loaded, delivered, returned, households = (vals["loaded"], vals["delivered"],
+                                                       vals["returned"], vals["households"])
+            if all(v is None for v in vals.values()):
+                raise Conflict("None of those counts appear in this source. Read it again, or defer it.")
             for key, v in vals.items():
                 if v is not None:
                     self.set_fact(c, pid, key, v, eid)
-            c.execute("UPDATE evidence SET status='accepted',note='Field-reported counts; not independently verified' WHERE id=?", (eid,))
+            # A correction is never refused for failing to add up: the new counts are
+            # recorded and the arithmetic gap becomes a visible issue for the coordinator.
+            merged = {k: (v["value"] if isinstance(v, dict) else v)
+                      for k, v in self.facts(c, pid).items()}
+            gap = None
+            if all(isinstance(merged.get(k), int) for k in ("loaded", "delivered", "returned")):
+                missing = merged["loaded"] - merged["delivered"] - merged["returned"]
+                if missing:
+                    word = "unaccounted for" if missing > 0 else "more than were loaded"
+                    gap = (f"Counts do not reconcile: {merged['delivered']} delivered + "
+                           f"{merged['returned']} returned vs {merged['loaded']} loaded — "
+                           f"{abs(missing)} {word}.")
+            if gap:
+                c.execute("UPDATE evidence SET status='review',note=? WHERE id=?", (gap, eid))
+                self.event(c, pid, "review", "An uncertainty stays visible", {"evidence_id": eid, "reason": gap})
+            else:
+                c.execute("UPDATE evidence SET status='accepted',note='Field-reported counts; not independently verified' WHERE id=?", (eid,))
             if delivered is not None:
                 c.execute("UPDATE questions SET status='answered' WHERE project=? AND key='delivery_count'", (pid,))
-            self.event(c, pid, "correction" if e["kind"] == "correction" else "fact", "Distribution figures updated from the field", {"evidence_id": eid, **{k:v for k,v in vals.items() if v is not None}})
-            return {"recorded": True}
+            self.event(c, pid, "correction" if e["kind"] == "correction" else "fact",
+                       "Distribution figures updated from the field",
+                       {"evidence_id": eid, **{k: v for k, v in vals.items() if v is not None},
+                        **({"ignored": ignored} if ignored else {})})
+            return {"recorded": True, **({"ignored": ignored} if ignored else {}),
+                    **({"note": gap} if gap else {})}
 
     def defer(self, pid, eid, reason):
         reason = reason.strip()[:400] or "This source needs a contributor clarification."
