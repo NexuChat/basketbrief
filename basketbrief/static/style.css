@@ -427,3 +427,34 @@ dialog img{width:100%;margin-top:14px;border-radius:var(--radius-sm);border:1px 
 main{padding-bottom:26px}
 .bench-right .panel,.bench-right .donors{min-width:0}
 .strip-head h1{max-width:26ch}
+
+/* ── the guided run ──────────────────────────────────────────────────────
+   One button plays the real story end to end so a first-time visitor sees the
+   agent chase evidence, deliver, and refuse its own stale approval — without
+   having to know which five things to click. */
+.demo-toolbar label{margin-left:auto}
+.story-button{min-height:40px;padding:9px 7px 9px 18px;font-size:12.5px;background:var(--ember);
+  color:#17110c;border-color:transparent}
+.story-button:hover{background:var(--ember-soft)}
+.story-button>span{width:26px;height:26px;background:rgba(23,17,12,.16);font-size:11px}
+#story-caption{position:fixed;left:50%;bottom:22px;transform:translate(-50%,160%);z-index:70;
+  display:flex;align-items:center;gap:16px;width:min(94vw,860px);padding:15px 16px 15px 20px;
+  border:1px solid var(--line-strong);border-radius:100px;background:rgba(26,26,20,.96);
+  backdrop-filter:blur(14px);box-shadow:0 26px 60px -26px #000;
+  font-size:13.5px;line-height:1.45;color:var(--paper);
+  transition:transform .5s cubic-bezier(.32,.72,0,1)}
+#story-caption.show{transform:translate(-50%,0)}
+#story-caption>span:nth-child(2){flex:1;min-width:0}
+.story-step{display:grid;place-items:center;width:38px;height:38px;flex-shrink:0;border-radius:50%;
+  background:var(--ember);color:#17110c;font:600 11.5px var(--mono)}
+.story-step.done{background:var(--acid);color:#131a0c;font-size:15px}
+.story-stop{flex-shrink:0;padding:9px 16px;border-radius:100px;border:1px solid var(--line-strong);
+  background:transparent;color:var(--muted);font-size:12px;transition:color .2s,border-color .2s}
+.story-stop:hover{color:var(--paper);border-color:var(--paper)}
+@media(max-width:760px){
+  #story-caption{flex-wrap:wrap;border-radius:var(--radius);padding:14px 16px;gap:11px;bottom:12px}
+  .story-step{width:30px;height:30px}
+  #story-caption>span:nth-child(2){flex-basis:100%;order:3;font-size:13px}
+  .story-button{width:100%;justify-content:space-between}
+  .demo-toolbar label{margin-left:0}
+}

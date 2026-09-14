@@ -5,8 +5,9 @@ const usd = (v) => '$' + Number(v || 0).toLocaleString('en-US', {maximumFraction
 const names = {coordinator:'Amal',finance:'Rana',field:'Sami',donor_a:'Northstar Foundation',donor_b:'Community Giving Circle'};
 let workspace, role = 'coordinator', state, previous = '', polling = false, toastTimer, requestEpoch = 0;
 function toast(message) { $('#toast').textContent = message; $('#toast').classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => $('#toast').classList.remove('show'), 5500); }
-async function api(path = '', options = {}) {
-  const headers = {...(options.body instanceof FormData ? {} : {'Content-Type':'application/json'}), Authorization:'Bearer ' + workspace.tokens[role], ...options.headers};
+async function api(path = '', options = {}) { return apiAs(role, path, options); }
+async function apiAs(who, path = '', options = {}) {
+  const headers = {...(options.body instanceof FormData ? {} : {'Content-Type':'application/json'}), Authorization:'Bearer ' + workspace.tokens[who], ...options.headers};
   const response = await fetch('/api/projects/' + workspace.id + path, {...options, headers});
   if (!response.ok) { const data = await response.json().catch(() => ({})); throw new Error(data.error || (response.status === 422 ? 'Please check the evidence and try again.' : 'The request could not be completed.')); }
   return options.raw ? response : response.json();
@@ -17,6 +18,100 @@ function sourceCards(evidence) {
   if (!evidence.length) return '<div class="empty-state"><p>Your evidence will appear here.</p></div>';
   return '<div class="evidence-list">' + evidence.map(e => `<article class="evidence-card"><div class="source-icon ${e.kind==='expense_claim'?'warning':''}" aria-hidden="true">${e.actor==='field'?'≋':'▤'}</div><div class="source-body"><div class="source-header"><h3>${esc(title(e))}</h3><span class="badge ${e.status==='review'?'amber':e.status==='pending'?'neutral':''}">${e.status==='accepted'?'✓ Linked':e.status==='pending'?'Reviewing':'Needs review'}</span></div><p class="source-meta">${esc(names[e.actor])} · Source ${ordinal.get(e.id) ?? e.id} · ${esc(e.kind.replace('_',' '))}</p><p class="source-excerpt">${esc(e.text)}</p><button class="text-button" data-source="${e.id}">View original source ↗</button></div></article>`).join('') + '</div>';
 }
+/* ── the guided run ───────────────────────────────────────────────────────
+   Every step below calls the same API a person would, as the same role, against
+   the same live agent. Nothing here is animated or pre-recorded: the captions
+   only narrate what the workbench underneath is actually doing. */
+let storyRunning = false, storyAbort = false;
+
+function caption(text, step, total) {
+  const el = $('#story-caption');
+  if (!el) return;
+  el.innerHTML = `<span class="story-step">${step}/${total}</span><span>${esc(text)}</span>` +
+    `<button class="story-stop" data-action="stop-story">Stop</button>`;
+  el.classList.add('show');
+}
+function captionDone(text) {
+  const el = $('#story-caption');
+  if (!el) return;
+  el.innerHTML = `<span class="story-step done">✓</span><span>${esc(text)}</span>` +
+    `<button class="story-stop" data-action="try-your-own">Try it with your own receipt ↗</button>`;
+}
+const pause = (ms) => new Promise(r => setTimeout(r, ms));
+
+async function untilIdle(limit = 150) {
+  for (let i = 0; i < limit; i++) {
+    if (storyAbort) throw new Error('stopped');
+    await pause(1400);
+    const st = await apiAs('coordinator');
+    state = st; render(st); previous = JSON.stringify(st);
+    if (!st.busy) return st;
+  }
+  throw new Error('The review is taking longer than expected.');
+}
+
+async function playStory() {
+  if (storyRunning) return;
+  storyRunning = true; storyAbort = false;
+  const N = 8;
+  try {
+    if (role !== 'coordinator') await switchRole('coordinator');
+    caption('Three sources arrived from two different people. The agent is reading them now.', 1, N);
+    let st = await untilIdle();
+
+    const open = st.questions.filter(q => q.status === 'open');
+    caption(open.length
+      ? `It recorded what each source states, found the gap, and asked ${names[open[0].recipient]} — once, directly.`
+      : 'It recorded what each source states.', 2, N);
+    await pause(3800);
+
+    if (open.length) {
+      caption('Rana answers with a photograph of the receipt. Amazon Nova Pro reads it before the review starts.', 3, N);
+      const blob = await (await fetch('/static/sample-receipt.png')).blob();
+      const body = new FormData();
+      body.append('file', new File([blob], 'transport-receipt.png', {type: 'image/png'}));
+      body.append('question_id', open[0].id);
+      await apiAs('finance', '/upload', {method: 'POST', body});
+      st = await untilIdle();
+      caption('Read from the photograph: vendor, invoice, two line items, sixty dollars. Every reported dollar now has a receipt behind it.', 4, N);
+      await pause(4200);
+    }
+
+    const report = st.report;
+    if (report && report.status !== 'delivered') {
+      caption('This is the only decision asked of the coordinator. Approval is bound to this exact version and its content hash.', 5, N);
+      await pause(3200);
+      await apiAs('coordinator', '/approve', {method: 'POST',
+        body: JSON.stringify({report_id: report.id, hash: report.hash, acknowledge: true})});
+      st = await untilIdle(10);
+      caption('Delivered to both donor inboxes, each with its own receipt.', 6, N);
+      await pause(3600);
+    }
+
+    caption('Hours later the field team recounts at the warehouse: 88 delivered, not 92.', 7, N);
+    await apiAs('field', '/evidence', {method: 'POST', body: JSON.stringify({
+      text: 'Correction: we recounted at the warehouse. 88 baskets were delivered, not 92.', kind: 'message', question_id: null})});
+    st = await untilIdle();
+    await pause(2600);
+
+    let refused = false;
+    if (report) {
+      try {
+        await apiAs('coordinator', '/approve', {method: 'POST',
+          body: JSON.stringify({report_id: report.id, hash: report.hash, acknowledge: true})});
+      } catch (e) { refused = true; }
+    }
+    caption(refused
+      ? 'Both reports were redrafted, the arithmetic gap is stated plainly — and the approval bound to the old version was refused. It cannot be reused for a version nobody read.'
+      : 'Both reports were redrafted and the arithmetic gap is stated plainly.', 8, N);
+    await pause(6000);
+    captionDone('That was the live agent, not a recording. Now feed it something of your own.');
+  } catch (e) {
+    if (String(e.message) !== 'stopped') captionDone('The run stopped: ' + e.message);
+    else $('#story-caption').classList.remove('show');
+  } finally { storyRunning = false; await refresh(true); }
+}
+
 function statusStrip(s) {
   // A workbench, not a landing page: one line of state, the figures inline,
   // and the work itself given the whole frame underneath.
@@ -200,6 +295,9 @@ async function refresh(force=false) {
  try { const s=await api(); if(epoch!==requestEpoch)return;state=s; const key=JSON.stringify(s); if(force || key!==previous){render(s);previous=key;} }
  catch(e){toast(e.message);} finally{polling=false;}
 }
+function storyButton() {
+  return `<button class="button story-button" data-action="play-story">Play the whole story <span>▶</span></button>`;
+}
 async function switchRole(next) { role=next; $('#role').value=role; previous='';requestEpoch++; $('#content').innerHTML='<div class="loading"><span class="spinner"></span><p>Opening '+esc(names[role])+'’s workspace…</p></div>'; while(polling) await new Promise(r=>setTimeout(r,50)); await refresh(true); }
 async function start(fresh=false) {
  try { if(!fresh){try{workspace=JSON.parse(sessionStorage.getItem('basketbrief.workspace'));}catch{workspace=null;}}
@@ -221,6 +319,9 @@ document.addEventListener('click', async e=>{
  if(b.dataset.source){await showSource(b.dataset.source);return;}
  if(b.dataset.sample){const samples={receipt:['receipt','TRANSPORT RECEIPT TR-204. Vehicle rental for September food distribution. Total USD 60.00. Paid. Synthetic receipt.'],missing:['message','I cannot find the transport receipt. Keep the USD 60 expense reported but unsupported.'],correction:['correction','Correction to our previous update: 100 baskets loaded, 90 baskets delivered, 10 returned to storage. Unique household count is still unknown.']};const [kind,text]=samples[b.dataset.sample];$('#evidence-kind').value=kind;$('#evidence-text').value=text;$('#evidence-text').focus();return;}
  if(b.dataset.export){b.disabled=true;const response=await api('/reports/'+b.dataset.export,{raw:true});const url=URL.createObjectURL(await response.blob());const a=document.createElement('a');a.href=url;a.download='BasketBrief-report-'+b.dataset.export+(role==='donor_b'?'-ar':'')+'.html';a.click();setTimeout(()=>URL.revokeObjectURL(url),10000);return;}
+ if(b.dataset.action==='play-story'){playStory();return;}
+ if(b.dataset.action==='stop-story'){storyAbort=true;return;}
+ if(b.dataset.action==='try-your-own'){$('#story-caption').classList.remove('show');await switchRole('finance');return;}
  if(b.dataset.action==='start'){await start(true);return;}
  if(b.dataset.action==='retry'){b.disabled=true;await api('/retry',{method:'POST'});toast('The review is queued. Your evidence is saved.');await refresh(true);}
  if(b.dataset.action==='approve'){b.disabled=true;const report=state.report;await api('/approve',{method:'POST',body:JSON.stringify({report_id:report.id,hash:report.hash,acknowledge:$('#acknowledge')?.checked||false})});toast('Approved version '+report.version+' delivered to both donor inboxes.');await refresh(true);}
