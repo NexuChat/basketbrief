@@ -16,6 +16,8 @@ dependencies = [
   "httpx==0.28.1",
   "python-multipart==0.0.32",
   "pillow>=11,<13",
+  "pypdfium2>=4,<6",
+  "cryptography>=44",
 ]
 
 [project.optional-dependencies]
@@ -25,7 +27,7 @@ dev = ["pytest>=8"]
 include = ["basketbrief*"]
 
 [tool.setuptools.package-data]
-basketbrief = ["static/*", "static/**/*"]
+basketbrief = ["static/*", "static/**/*", "migrations/*.sql"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

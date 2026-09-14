@@ -76,16 +76,29 @@ def create_app(db_path=None, engine=None, background=True):
 
     @asynccontextmanager
     async def lifespan(app):
-        thread=None
+        from . import team_agent, team_mail
+        def team_worker():
+            while not stop.is_set():
+                team_agent.run_one(app.state.team,engine)
+                stop.wait(.4)
+        def mail_worker():
+            while not stop.is_set():
+                team_mail.send_one(app.state.team)
+                stop.wait(1)
+        threads=[]
         if background:
-            thread=threading.Thread(target=worker,name='basketbrief-worker',daemon=True)
-            thread.start()
+            for target,name in [(worker,'basketbrief-worker'),(team_worker,'basketbrief-team-worker'),(mail_worker,'basketbrief-mail-worker')]:
+                thread=threading.Thread(target=target,name=name,daemon=True)
+                threads.append(thread)
+                thread.start()
         yield
         stop.set()
-        if thread: thread.join(timeout=2)
+        for thread in threads: thread.join(timeout=2)
 
     app=FastAPI(title='BasketBrief',lifespan=lifespan,docs_url=None,redoc_url=None)
     app.state.store=store
+    from .team_web import mount_team
+    mount_team(app,store)
     app.mount('/static',StaticFiles(directory=STATIC),name='static')
 
     @app.middleware('http')

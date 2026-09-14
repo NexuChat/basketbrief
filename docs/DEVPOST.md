@@ -30,9 +30,17 @@ The scenario and every participant are synthetic. The reporting burden is real. 
 
 The guided button supplies fictional replies and approvals, while model calls, tool calls, versioning, guardrails, database writes, and inbox delivery execute live. Visitors can also switch roles and perform each step themselves.
 
+## Work with a real team account
+
+The optional `/team` workspace adds individual accounts, one-use invitations, project roles, multiple expenses, original currency totals, and reviewed exchange rates. Uploads and follow-up questions create persistent notifications for the responsible members. Donors see approved snapshots only.
+
+A contributor can attach a requested receipt to the original expense without creating another charge. A separate-browser live test exercised the contributor upload, Strands review, coordinator approval, and donor receipt. PDF originals remain available for human review. A private, owner-authorized Gmail app-password test imported a selected PDF, blocked duplication and cross-account access, and disconnected afterward. No private mail is part of this submission.
+
+Gmail and Microsoft OAuth handlers still need public provider registration and live consent tests; optional external notification emails still need an application SMTP sender. In-app notifications and direct uploads work independently.
+
 ## How it works
 
-BasketBrief uses one Strands `Agent`, seven scoped tools, a sequential tool executor, and Amazon Bedrock Nova Pro at temperature zero.
+The guided demonstration uses one Strands `Agent`, seven scoped tools, a sequential tool executor, and Amazon Bedrock Nova Pro at temperature zero. A separate project-scoped Strands agent follows evidence in the signed-in team workspace using three tools; both workflows keep human approval outside the model.
 
 The model interprets free-form evidence and chooses the next tool. Code owns the facts and irreversible boundaries:
 
@@ -66,8 +74,8 @@ The extended story initially failed when a terse response such as `Returned kits
 
 ## Evidence
 
-- **105 tests pass**, including 30 adversarial guard cases and document-scope review regressions.
-- Three consecutive full staging journeys after the final reliability fix completed in **66.0 s, 64.6 s, and 63.0 s** with 88 delivered, 12 returned, zero unresolved questions, four donor snapshots, and no browser errors.
+- **121 tests pass**, including 30 adversarial guard cases and document-scope review regressions.
+- Three consecutive full staging journeys before the later document-scope and team updates completed in **66.0 s, 64.6 s, and 63.0 s** with 88 delivered, 12 returned, zero unresolved questions, four donor snapshots, and no browser errors.
 - Every run preserved the first donor snapshots, rejected the stale approval, and delivered the approved amendment to both donors.
 - `scripts/baseline.py` executes the full local-parser workflow and reports persisted interactions: two contributor questions, two contributor replies, two coordinator approvals, and four donor deliveries. It makes no claim about human time or productivity.
 
@@ -81,7 +89,7 @@ We also learned to distinguish repeatable arithmetic from a valid measurement. A
 
 ## What's next
 
-The current demo deliberately supports one supplies transaction and one transport transaction per distribution. A production version needs transaction identities, donor-defined reporting requirements, external delivery connectors, durable organizational identity, and a real pilot before making any claim about time saved or outcomes improved.
+The guided demonstration stays deliberately small. The signed-in team workspace now supports multiple expenses and real account memberships. Next come provider OAuth activation, an application email sender, donor-defined reporting requirements, an independent security review, and a real pilot before making claims about time saved or outcomes improved.
 
 ## Honest scope
 

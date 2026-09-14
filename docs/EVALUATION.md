@@ -4,6 +4,18 @@ This document separates deterministic tests, live model runs, provider liveness,
 
 Measured on 2026-09-14. The post-review build was exercised against Amazon Bedrock with the same application identity and service configuration used by the public demo.
 
+## Signed-in team and mailbox checks
+
+The final team extension passed a full 121-test run (one upstream deprecation warning). The earlier coverage percentages below belong to the 105-test document-reader build, not this larger extension.
+
+A live staging journey used separate browser accounts for coordinator, contributor and donor. The contributor's expense appeared in the coordinator's browser through polling, with a persistent notification. The live Strands agent asked the actual contributor for the missing receipt. Attaching the synthetic receipt completed that same expense; the reader returned USD 60.00, and the team agent prepared a draft. The coordinator opened the original and approved the report. The donor saw zero reports before approval and one afterward. A 390-pixel contributor viewport had no horizontal overflow.
+
+This test exposed and fixed two defects: opening an original document started a nested SQLite write transaction, and the model requested a receipt even after a checked receipt was attached. Regression tests cover document opening, receipt replacement without double counting, cross-account access, and refusing that redundant question.
+
+An owner-authorized private Gmail test authenticated using a Google app password, listed mail read-only, imported one selected PDF, retained the original, generated a PNG preview, blocked repeat import, and refused access from another account. The imported document was classified as an invoice needing review; it was not automatically counted as a paid purchase receipt. Stored credentials were encrypted, then the test connections were removed. No private attachment, mailbox content or credential is published here.
+
+OAuth account binding, PKCE state, replay refusal, and encrypted token storage were tested with mocked Google and Microsoft responses. Public OAuth registrations, real consent redirects, token renewal with those providers, and external SMTP delivery are **not live-verified**. A simulated SMTP failure stayed queued rather than being reported as sent; removing project membership cancelled the pending notification email. These checks do not constitute a full security audit.
+
 ## 1. Complete live journey
 
 Before the document-scope update described below, three consecutive browser-driven staging journeys completed with no browser errors. These timings measure that earlier reader version:
