@@ -1,1 +1,0 @@
-One Strands agent on Amazon Nova Pro. The reader runs on Bedrock AgentCore Runtime; the team's vendor history lives in AgentCore Memory, because a workspace lasts one distribution and a team does not. The model decides what a source means and who to ask. The code decides what is allowed.

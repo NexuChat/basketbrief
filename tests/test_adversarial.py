@@ -299,3 +299,17 @@ def test_a_donor_learns_a_correction_arrived_after_their_version(project):
     assert after["inbox"][0]["body"]["summary"]["delivered"] == 92
     # and the unapproved figures are never handed to a donor
     assert after["report"] is None and after["facts"] == {}
+
+
+# ── the offline path must survive the moment the product exists for ───────
+def test_the_local_parser_reads_a_correction_and_not_the_denied_number(project):
+    """"88 kits were delivered, not 92" means 88. The offline demo hangs on it."""
+    from basketbrief.agent import local_process
+    store, pid, _ = project
+    local_process(store, pid)
+    assert facts_of(store, pid)["delivered"]["value"] == 92
+    store.submit(pid, "field",
+                 "Correction: we recounted at the church hall. 88 kits were delivered, not 92.",
+                 "message")
+    local_process(store, pid)
+    assert facts_of(store, pid)["delivered"]["value"] == 88, "the denied number was recorded"

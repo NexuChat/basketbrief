@@ -112,7 +112,12 @@ def local_process(store, pid):
             elif e["actor"] == "field":
                 counts = {}
                 for field, noun in [("loaded", "loaded"), ("delivered", "delivered"), ("returned", "returned")]:
-                    m = re.search(rf"(\d+)\s*(?:kits?|baskets?)?\s*{noun}\b|\b{noun}\s*(\d+)", text, re.I)
+                    # People write "88 kits were delivered, not 92". The count belongs to
+                    # the number in front of the verb, so a couple of filler words are
+                    # allowed there — and the trailing branch must NOT reach across a
+                    # comma, or "delivered, not 92" would record the number being denied.
+                    m = re.search(rf"(\d+)\s*(?:kits?|baskets?)?\s*(?:\w+\s+){{0,2}}{noun}\b"
+                                  rf"|\b{noun}\s*[:=]?\s*(\d+)", text, re.I)
                     if m:
                         counts[field] = int(m[1] or m[2])
                 if not counts:

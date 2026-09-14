@@ -31,7 +31,7 @@ Zero streaming errors across all seven runs. One earlier defect — a per-call B
 
 ## 2. What happens when the evidence is wrong or hostile
 
-`tests/test_adversarial.py` — 29 cases, all passing. These exercise the **guards**, not the model, which is the point: a wrong answer from any model cannot become a fact, so the guarantee does not depend on which model is behind the tools.
+`tests/test_adversarial.py` — 30 cases, all passing. These exercise the **guards**, not the model, which is the point: a wrong answer from any model cannot become a fact, so the guarantee does not depend on which model is behind the tools.
 
 | # | The attempt | What must happen | Result |
 |---|---|---|---|

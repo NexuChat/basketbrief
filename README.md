@@ -56,12 +56,19 @@ Two donors want overlapping things. Most tooling asks the delivery team twice. B
 Python 3.11+.
 
 ```bash
-git clone <this repo> && cd basketbrief
-python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-.venv/bin/python -m pytest -q          # 25 tests, no AWS needed
+git clone https://github.com/NexuChat/basketbrief && cd basketbrief
+python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
+.venv/bin/python -m basketbrief.demo    # the whole journey in one command, no AWS needed
+.venv/bin/python -m pytest -q           # 55 tests, 30 of them adversarial, no AWS needed
 ```
 
-Start it with no cloud credentials at all — a labelled local parser stands in for the model, so the whole journey works offline:
+`python -m basketbrief.demo` prints the run end to end: the three sources, the gap the
+agent finds, the question it sends to one person, the answer, the approval bound to a
+content hash, the correction that lands afterwards, the arithmetic gap stated in the
+words that matter, and the stale approval being refused. It exits non-zero if any of
+those stops holding.
+
+Then start the app with no cloud credentials at all — a labelled local parser stands in for the model, so the whole journey works offline in the browser too:
 
 ```bash
 .venv/bin/uvicorn basketbrief.web:app --port 8770
@@ -102,7 +109,7 @@ docs/          architecture, submission text, evaluation notes
 
 Seven consecutive end-to-end journeys, three of them instrumented, produced **identical outcomes at every step**: 27.4 s wall clock, three agent cycles, one question asked exactly once, the photograph closing the gap, `$1,260` supported and `$0` undocumented, `88` delivered after the correction, two donor deliveries with receipts, and **HTTP 409** when the approval bound to the delivered version was tried again. Zero streaming errors.
 
-`tests/test_adversarial.py` puts 29 deliberate defects in front of the guards — invented amounts, counts absent from their source, three prompt injections inside field evidence, a receipt whose lines disagree with its total, a household count sitting next to a denial. All pass, and one of them **found a real defect** in our own household guard before a judge could.
+`tests/test_adversarial.py` puts 30 deliberate defects in front of the guards — invented amounts, counts absent from their source, three prompt injections inside field evidence, a receipt whose lines disagree with its total, a household count sitting next to a denial. All pass, and one of them **found a real defect** in our own household guard before a judge could.
 
 Full numbers, method and the things we deliberately did not measure: [`docs/EVALUATION.md`](docs/EVALUATION.md).
 

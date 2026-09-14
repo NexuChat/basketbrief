@@ -16,3 +16,7 @@ runtime/**/.venv/
 runtime/**/cdk.out/
 runtime/agentcore/cdk/package-lock.json
 basketbrief/static/BasketBrief-demo.mp4
+
+# video build scratch: raw footage, cut clips, audit frames
+video/
+video2/
