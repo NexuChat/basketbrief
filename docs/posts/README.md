@@ -12,12 +12,12 @@ The three short URLs resolve to the complete articles. They were saved together,
 
 The earlier statement that publication had not been verified was stale and incorrect. Do not create duplicate posts.
 
-## Content update still required on AWS Builder
+## Published content updated and verified
 
-The files in this directory contain replacement bodies for editing the existing articles. Local revisions have **not** yet been saved to AWS Builder; the available browser is signed out.
+After the owner signed in, all three existing articles were updated on September 14 before 23:50 UTC. A separate unsigned browser then verified each public article's unchanged title, corrected content, absence of the superseded claim, and cover-image metadata. Evidence is recorded in `PUBLICATION-VERIFICATION.json`. The Markdown files in this directory are the published body sources; their first title line is omitted from the body because AWS Builder already renders the article title.
 
-- Article 1 still states that four unaccounted-for kits imply four affected households and promises a roughly 45-second journey. The replacement keeps households unknown, updates follow-up behavior, and removes the timing promise.
-- Article 2 still describes the earlier Latin-only image reader, model-written reports, earlier latency measurements as current, and broadly team-keyed Memory. The replacement describes document classification, review limits, deterministic report templates, historical timing scope and the configured fictional team's vendor history.
-- Article 3 still describes the intermediate regex as current, gives an outdated case count, and overstates what guard tests prove. The replacement distinguishes deterministic boundary tests from live-model security testing and points to current grounding and evaluation.
+- Article 1 now keeps affected households unknown, updates follow-up behavior, qualifies the evidence checks, and removes the roughly 45-second timing promise.
+- Article 2 now describes document classification, review limits, deterministic report templates, historical timing scope and the configured fictional team's vendor history.
+- Article 3 now distinguishes the intermediate regex from current grounding, updates the suite count, and separates deterministic boundary tests from live-model security testing.
 
-Edit the existing posts under the same URLs, preserving titles and covers. Claims must remain consistent with `docs/EVALUATION.md`; no field pilot or measured human time saving is claimed.
+The existing article URLs, titles, covers and tags were retained. The platform initially requested a fresh content review for article 3; the review was repeated through its editor and publication completed. No duplicate article was created. No field pilot or measured human time saving is claimed.
