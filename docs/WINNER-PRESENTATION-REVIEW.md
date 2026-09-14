@@ -12,7 +12,7 @@ No competitor footage, music, graphics or wording is reused in BasketBrief.
 
 ## Changes to BasketBrief
 
-- Start with the consequence: a report has been sent, then the contributor corrects its count.
+- Introduce the product and coordinator’s problem before the numbers. Owner review found that opening on an unexplained correction could sound like a correction to the submission itself. Show that event later, after the first report, with explicit story context.
 - Present one complete causal sequence: evidence gap → direct question → source review → human approval → donor copy → late correction → fresh approval → amendment.
 - Record the actual contributor inboxes, source dialog and donor views, not just the coordinator dashboard.
 - Crop to the UI element being discussed. Keep a short editorial heading beside it. Preserve the original UI pixels and values.

@@ -1,18 +1,18 @@
 # BasketBrief final film — 14 September 2026
 
-The final cut is **3:36** (216.233 seconds), 1920×1080, 30 fps, H.264/AAC.
-[Download the MP4](https://basketbrief.mlki.app/static/BasketBrief-final-20260914.mp4) · [Watch with captions](https://basketbrief.mlki.app/static/film.html)
+The final cut is **3:44** (223.733 seconds), 1920×1080, 30 fps, H.264/AAC.
+[Download the MP4](https://basketbrief.mlki.app/static/BasketBrief-polished-20260914.mp4) · [Watch with captions](https://basketbrief.mlki.app/static/film.html)
 
 The [official rules](https://agentsforhumans.devpost.com/rules) allow **five minutes**, including slides, screen recording and voiceover. A public YouTube or Vimeo video is required for the submission. Three minutes is not the maximum. The owner will upload this replacement; the submission still links the earlier YouTube film until its URL is updated.
 
 ## Story and evidence
 
-The opening presents a consequence: both donors already have the report when Sami corrects 92 delivered kits to 88. We then follow the work that makes an amendment trustworthy:
+The opening introduces the relief coordinator’s paperwork problem and BasketBrief’s purpose. It then names the fictional team and follows one example in chronological order. The count changes only after the viewer has seen the first approved report; it is an event inside the demonstration, not a reference to an earlier submission or video:
 
 1. Introduce the coordinator, contributors and two recipients.
 2. Find USD 60 without a receipt and show the question in Rana's actual inbox.
 3. Upload the source, review the reading, approve and show the first donor copy.
-4. Return to the late correction. Four kits need an explanation; the previous approval cannot authorize the changed report.
+4. Introduce a later update from Sami, explicitly within this example. Four kits need an explanation; the previous approval cannot authorize the changed report.
 5. Show the question in Sami's inbox and his answer: 12 returned.
 6. Review both changes and deliver the amendment in English and Arabic.
 7. Show the separate-account team workflow, explain the architecture, and state the validation boundaries.
@@ -27,7 +27,7 @@ The recording verified stale approval returns HTTP 409, the final counts are 88 
 
 ## Upload metadata
 
-**Title:** BasketBrief — Every correction deserves follow-through | Agents for Humans
+**Title:** BasketBrief — Evidence connected. People informed. | Agents for Humans
 
 **Visibility:** Public
 
