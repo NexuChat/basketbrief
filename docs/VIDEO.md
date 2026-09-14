@@ -29,6 +29,8 @@ The recording verified stale approval returns HTTP 409, the final counts are 88 
 
 **Title:** BasketBrief — Evidence connected. People informed. | Agents for Humans
 
+**Thumbnail:** [Download the 1280×720 cover](https://basketbrief.mlki.app/static/BasketBrief-video-cover.jpg). Source artwork: `docs/video-cover.html`. Checked at both full size and 320×180.
+
 **Visibility:** Public
 
 **Description:**
