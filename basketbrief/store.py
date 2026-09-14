@@ -273,6 +273,61 @@ class Store:
             return {"recorded": True, **({"ignored": ignored} if ignored else {}),
                     **({"note": gap} if gap else {})}
 
+    def transcribe_attachment(self, pid, eid, uploads_dir, reader=None):
+        """Read an attached receipt photograph and write the transcription back as the source text.
+
+        The picture becomes words in the evidence row, so every later guard — the amount
+        must appear in the source — applies to what the paper actually said.
+        """
+        from . import vision
+        with self.db() as c:
+            e = self.get_evidence(c, pid, eid)
+            if not e["attachment"]:
+                raise Conflict("That source has no attached image.")
+            if e["status"] != "pending":
+                return {"transcribed": False, "reason": "already processed"}
+        path = Path(uploads_dir) / Path(e["attachment"]).name
+        if not path.exists():
+            raise Conflict("The attached image is no longer available.")
+        reading = (reader or vision.read_receipt)(path.read_bytes())
+        text = vision.as_source_text(reading)
+        with self.db() as c:
+            c.execute("UPDATE evidence SET text=? WHERE id=?", (text, eid))
+            self.event(c, pid, "vision", "Read the receipt photograph", {
+                "evidence_id": eid, "model": reading.get("model"),
+                "total": str(reading.get("stated_total")) if reading.get("stated_total") is not None else None,
+                "currency": reading.get("currency"), "items": len(reading.get("items") or []),
+                "confidence": reading.get("confidence"),
+                **({"mismatch": reading["mismatch"]} if reading.get("mismatch") else {})})
+            if reading.get("mismatch"):
+                c.execute("UPDATE evidence SET note=? WHERE id=?", (reading["mismatch"], eid))
+        return {"transcribed": bool(reading.get("ok")), "text": text,
+                "mismatch": reading.get("mismatch"),
+                "currency": reading.get("currency"),
+                "stated_total": str(reading["stated_total"]) if reading.get("stated_total") is not None else None}
+
+    def unfollowed_gaps(self, pid):
+        """Known gaps with no open question: (question key, recipient, what the agent must chase).
+
+        Deterministic, so the promise 'it follows up' does not depend on the model
+        remembering to. Returns nothing once a question for that key exists.
+        """
+        gaps = []
+        with self.db() as c:
+            open_keys = {r["key"] for r in c.execute(
+                "SELECT key FROM questions WHERE project=? AND status IN ('open','answered')", (pid,))}
+            facts = self.facts(c, pid)
+        for key in ("transport", "food"):
+            fact = facts.get(key)
+            value = fact["value"] if isinstance(fact, dict) else None
+            if isinstance(value, dict) and value.get("supported") is False and f"{key}_receipt" not in open_keys:
+                gaps.append((f"{key}_receipt", "finance",
+                             f"{value['amount']} {value.get('currency', 'USD')} of {key} spending is reported "
+                             f"without a receipt."))
+        if facts.get("delivered") is None and "delivery_count" not in open_keys:
+            gaps.append(("delivery_count", "field", "No field-reported delivery count has been recorded."))
+        return gaps
+
     def defer(self, pid, eid, reason):
         reason = reason.strip()[:400] or "This source needs a contributor clarification."
         with self.db() as c:

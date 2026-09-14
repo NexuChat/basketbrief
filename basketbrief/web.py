@@ -63,7 +63,7 @@ def create_app(db_path=None, engine=None, background=True):
                 stop.wait(.4)
                 continue
             try:
-                process_project(store,job['project'],job['engine'])
+                process_project(store,job['project'],job['engine'],db_path.parent/'uploads')
                 store.deliver(job['project'])
                 store.finish_job(job['id'])
             except Exception as exc:
