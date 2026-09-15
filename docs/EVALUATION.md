@@ -28,6 +28,8 @@ python scripts/live_stress.py --output /tmp/basketbrief-live-probes.json --repea
 
 This is a small application-level regression probe, not a broad attack benchmark, model-only refusal score, security certification or estimate of field accuracy. Cases informed the fixes; there is no held-out test set. The deterministic guards remain part of every live run, and the JSON records fallback follow-ups as well as model completion. All three batches are published, including failures.
 
+After deploying the final code, the public browser journey completed, then accepted a new 87-delivered correction. It asked about the one-kit gap, kept households unknown, and preserved both earlier snapshots in each donor inbox. No browser page errors or 390-pixel horizontal overflow were observed. [Recorded outcomes](live-probes/04-public-browser.json) and [reproduction steps](JUDGE-GUIDE.md#try-a-correction-that-is-not-in-the-film).
+
 ## Final presentation recording
 
 The 2026-09-14 replacement film records an isolated fictional workspace through actual browser actions against the public service. It opens the contributor's question, uploads the synthetic receipt, inspects the original, approves the first report, submits a late correction, observes HTTP 409 when reusing the first approval, resolves returned=12, and checks both donor inboxes. Both donor roles retained two report snapshots; the final counts were 88 delivered and 12 returned. There were no browser page errors in this recorded journey. Waiting intervals are edited; the film is not a latency benchmark.

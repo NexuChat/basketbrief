@@ -32,7 +32,10 @@
       "superseded_claim_absent": true,
       "read_without_sign_in": true,
       "cover_meta_present": true,
-      "rendered_text_sha256": "979ef830615121a59ca54df051df486419914fe369fb5ff5f2b6b1eb53ee48cc"
+      "rendered_text_sha256": "98aa5df23a68e361415be3b5be52e7d1fa80ca00e9cd7329a90b49623b9f0534",
+      "checked_at": "2026-09-15T00:20:03.854518+00:00",
+      "new_live_probe_section_present": true,
+      "current_suite_125_present": true
     }
   ]
 }

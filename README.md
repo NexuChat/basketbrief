@@ -99,4 +99,4 @@ After changing `documents.py`, run `python scripts/sync_document_reader.py` to c
 
 ## Disclosure
 
-Built during this hackathon. Persistence/channel patterns originated in an abandoned entry for the same competition and were reused; domain-specific evidence, reconciliation, vision, approvals and delivery were implemented here. AI coding assistants were used throughout. See [LICENSE](LICENSE).
+Built during this hackathon. Persistence/channel patterns originated in an abandoned entry for the same competition and were reused; domain-specific evidence, reconciliation, vision, approvals and delivery were implemented here. AI coding assistants were used throughout. See [LICENSE](LICENSE) and [third-party font notices](THIRD-PARTY-NOTICES.md).

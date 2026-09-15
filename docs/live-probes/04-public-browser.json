@@ -1,0 +1,77 @@
+{
+  "summary": {
+    "reported": "1260.00",
+    "supported": "1260.00",
+    "unsupported": "0.00",
+    "loaded": 100,
+    "delivered": 87,
+    "returned": 12,
+    "households": null
+  },
+  "questions": [
+    {
+      "key": "transport_receipt",
+      "recipient": "finance",
+      "text": "Please provide the transport receipt for the reported USD 60.00 transport spending.",
+      "status": "answered"
+    },
+    {
+      "key": "distribution_reconciliation:538-540-538",
+      "recipient": "field",
+      "text": "The current counts differ by 4 kits: 100 loaded, 88 delivered, 8 returned. Check the delivery and storage records and provide corrected counts, or explain what remains unknown. Do not infer a household count from this difference.",
+      "status": "answered"
+    },
+    {
+      "key": "distribution_reconciliation:538-542-541",
+      "recipient": "field",
+      "text": "The current counts differ by 1 kits: 100 loaded, 87 delivered, 12 returned. Check the delivery and storage records and provide corrected counts, or explain what remains unknown. Do not infer a household count from this difference.",
+      "status": "open"
+    }
+  ],
+  "report_status": "draft",
+  "donors": {
+    "donor_a": [
+      {
+        "delivered": 88,
+        "households": null,
+        "loaded": 100,
+        "reported": "1260.00",
+        "returned": 12,
+        "supported": "1260.00",
+        "unsupported": "0.00"
+      },
+      {
+        "delivered": 92,
+        "households": null,
+        "loaded": 100,
+        "reported": "1260.00",
+        "returned": 8,
+        "supported": "1260.00",
+        "unsupported": "0.00"
+      }
+    ],
+    "donor_b": [
+      {
+        "delivered": 88,
+        "households": null,
+        "loaded": 100,
+        "reported": "1260.00",
+        "returned": 12,
+        "supported": "1260.00",
+        "unsupported": "0.00"
+      },
+      {
+        "delivered": 92,
+        "households": null,
+        "loaded": 100,
+        "reported": "1260.00",
+        "returned": 8,
+        "supported": "1260.00",
+        "unsupported": "0.00"
+      }
+    ]
+  },
+  "page_errors": [],
+  "mobile_overflow": false,
+  "verified_at": "2026-09-15T00:20:48Z"
+}
