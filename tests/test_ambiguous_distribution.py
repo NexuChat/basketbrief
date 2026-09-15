@@ -28,3 +28,12 @@ def test_ambiguous_field_does_not_discard_unambiguous_correction(tmp_path):
         facts = store.facts(c, pid)
         assert facts['delivered']['value'] == 88
         assert 'returned' not in facts
+
+
+def test_receipt_refusal_cannot_erase_explicit_expense_claim(tmp_path):
+    store = Store(tmp_path / 'claim.db')
+    pid = store.create_project('local')['id']
+    claim = next(e for e in store.pending(pid) if e['kind'] == 'expense_claim')
+    with pytest.raises(Conflict, match='Preserve reported spending'):
+        store.defer(pid, claim['id'], 'Expense claim is not a supporting receipt.')
+    assert any(e['id'] == claim['id'] for e in store.pending(pid))

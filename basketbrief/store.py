@@ -431,6 +431,19 @@ class Store:
         reason = reason.strip()[:400] or "This source needs a contributor clarification."
         with self.db() as c:
             e = self.get_evidence(c, pid, eid)
+            # A clear first USD claim must stay in reported spending, regardless
+            # of how the model phrases its reason for deferring the receipt.
+            if e['actor'] == 'finance' and e['kind'] == 'expense_claim' and not e['attachment']:
+                amounts = expense_amounts(e['text'])
+                transport = bool(re.search(r'\b(truck|transport|haul|delivery van)\b', e['text'], re.I))
+                supplies = bool(re.search(r'\b(supplies|relief kit|food|kits?)\b', e['text'], re.I))
+                category = 'transport' if transport else 'supplies' if supplies else None
+                amount = next(iter(amounts)) if len(amounts) == 1 else None
+                if (category and category not in self.facts(c, pid) and amount is not None
+                        and 0 <= amount <= 1000000 and amount == amount.quantize(Decimal('0.01'))
+                        and re.search(r'\bUSD\b|\$', e['text'], re.I)
+                        and not re.search(r'\b(EUR|GBP|YER)\b', e['text'], re.I)):
+                    raise Conflict('Preserve reported spending: record this explicit expense claim with supported=false, then ask for its receipt.')
             if e['kind'] == 'expense_claim' and re.search(r'missing.*receipt|receipt.*missing|no receipt', reason, re.I):
                 raise Conflict('Preserve reported spending: record this expense claim with supported=false. A missing receipt does not erase the reported expense.')
             if e["status"] != "pending":

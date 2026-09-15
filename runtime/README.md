@@ -21,13 +21,15 @@ agentcore/                           CLI config and the CDK stack
 ```bash
 npm i -g @aws/agentcore
 cd runtime
+cp agentcore/aws-targets.example.json agentcore/aws-targets.json
+# Set your AWS account ID and region in agentcore/aws-targets.json.
 agentcore deploy --yes          # creates the execution role and the runtime via CDK
 agentcore invoke --prompt-file payload.json --runtime receiptreader
 ```
 
 `payload.json` is `{"image_b64": "<base64 of a PNG or JPEG>"}`. The deployed ARN then goes into the web app's `BASKETBRIEF_RUNTIME_ARN`.
 
-The account id in `agentcore/aws-targets.json` is ours; change it to yours. Nothing here holds a credential — the CLI uses your ambient AWS session.
+The example uses a placeholder account ID. The real `agentcore/aws-targets.json` is local and ignored by Git. The CLI uses your ambient AWS session; no credentials belong in these files.
 
 ## A note on the CDK lockfile
 

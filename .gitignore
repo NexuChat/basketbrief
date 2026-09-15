@@ -35,3 +35,8 @@ run/
 !.env.example
 *.db-wal
 *.db-shm
+
+# Local assistant tooling and account-specific deployment configuration.
+.agents/
+skills-lock.json
+runtime/agentcore/aws-targets.json
