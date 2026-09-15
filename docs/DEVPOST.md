@@ -44,7 +44,8 @@ Deterministic code owns arithmetic, permissions, saved facts, follow-up persiste
 
 ## What we verified
 
-- 121 automated tests passed, including 30 adversarial boundary cases. These test code boundaries; they are not a live-model attack benchmark.
+- 125 automated tests passed, including 30 adversarial boundary cases. These test code boundaries; they are not a live-model attack benchmark.
+- A separate live Strands/Bedrock probe exercised five fixed synthetic challenges twice. The final build passed 10/10 after two defects were found and fixed: choosing an ambiguous count and omitting a valid unsupported claim. All batches, including failures, are published in the evaluation; this is not a broad security benchmark.
 - Live guided runs exercised receipt follow-up, first approval, a late correction, refusal of stale approval and delivery of both amendments.
 - A separate-account browser test exercised contributor upload → reviewer notification → agent follow-up → coordinator approval → donor access. Donors saw no report before approval.
 - An owner-authorized Gmail app-password test imported one selected PDF, retained its original, and blocked duplicate import and access from another account. The test connection was removed afterward; no private mail is published.

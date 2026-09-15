@@ -67,6 +67,14 @@ They are less dramatic because they all passed, but they show exactly which stor
 
 They exercise the **guards**, not the model. These cases establish that the tested invalid tool inputs are rejected at the deterministic boundary; they do not establish resistance to every model error or prompt injection.
 
+## The live model found two more gaps
+
+Before the extended submission deadline, we ran five fixed synthetic challenge cases twice against real Strands/Nova Pro turns, with the application guards enabled. The first batch exposed a different path through the ambiguity bug: a model-selected 12 could pass the storage tool even when the source offered both 12 and 10. We fixed that boundary to require one grounded candidate per field.
+
+The next batch caught a valid USD 60 expense claim being deferred because it was not a supporting receipt. The false receipt was refused, but the reported spending also disappeared. The deferral guard now preserves an explicit first USD claim as unsupported spending instead of letting the model discard it for lack of a receipt.
+
+After both fixes, all checks passed in 10 of 10 runs. The full suite passed 125 tests. We publish all three batches, including the failures and a corrected evaluator condition, in [the evaluation and raw results](https://github.com/NexuChat/basketbrief/blob/main/docs/EVALUATION.md#live-challenge-probes-defects-found-and-retested). These are fixed cases used to improve the implementation, not a held-out benchmark or security guarantee.
+
 ## What it cost, and what it bought
 
 The first pass bought one real defect found before a judge could find it. A later review found two more boundary errors: a sentence-ending period could hide a valid count, and an ambiguous reply could be treated as unambiguous. Both now have regressions.
@@ -75,6 +83,6 @@ If you are shipping an agent this week, write the cases that are supposed to fai
 
 ---
 
-The suite is in **github.com/NexuChat/basketbrief** (MIT). The current 121-test suite includes 30 adversarial boundary cases; the measured journey numbers and limits are written up in `docs/EVALUATION.md`. Live demo: **basketbrief.mlki.app**.
+The suite is in **github.com/NexuChat/basketbrief** (MIT). The current 125-test suite includes 30 adversarial boundary cases; the measured journey numbers and limits are written up in `docs/EVALUATION.md`. Live demo: **basketbrief.mlki.app**.
 
 Built for the Agents for Humans Hackathon, Good Neighbor Agents track.

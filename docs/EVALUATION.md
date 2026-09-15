@@ -4,6 +4,30 @@ This document separates deterministic tests, live model runs, provider liveness,
 
 Measured on 2026-09-14. The post-review build was exercised against Amazon Bedrock with the same application identity and service configuration used by the public demo.
 
+## Live challenge probes: defects found and retested
+
+On 2026-09-15, before the extended deadline, `scripts/live_stress.py` ran five fixed synthetic cases twice per build against the real Strands/Nova Pro agent: a clean control, a claim pretending to be a receipt, kits pretending to be households, a correction requesting reuse of approval, and an ambiguous returned count. Setup and human approvals were scripted; challenge processing used Bedrock with the production guards enabled.
+
+The first batch exposed a real defect: one ambiguous reply let a model-selected 12 enter the draft when the source offered both 12 and 10. No unauthorized approval or delivery occurred. The storage guard now requires a unique grounded candidate for each field, including when the model calls the tool directly. A separate evaluator mistake also marked a properly deferred `unresolved` question as a failure; the criterion now accepts both `open` and `unresolved`. The original output is preserved.
+
+The second batch preserved ambiguous counts but found one omitted expense claim: the model deferred a valid USD 60 claim because it was not a supporting receipt. Its money never became receipt-supported, but it also disappeared from reported spending. Deferral now refuses to discard a first, unambiguous, recognized USD claim before recording it as unsupported, independent of the model's wording. Unsupported categories, conflicting records and ambiguous amounts still require review.
+
+The final build (`2fe9b02`) passed all checks in **10 of 10 runs**. All ten completed their challenge turn. Household counts remained unknown, no agent approval or delivery occurred, and both correction cases preserved prior donor snapshots and rejected stale approval. Four regression cases were added; the complete suite passed **125 tests**, with one upstream deprecation warning.
+
+| Batch | Raw result | Interpretation |
+|---|---:|---|
+| [Initial](live-probes/01-initial.json) | 8/10 | One real ambiguity defect; one evaluator false failure |
+| [After ambiguity fix](live-probes/02-after-ambiguity-fix.json) | 9/10 | One valid claim omitted after receipt refusal |
+| [Release](live-probes/03-release.json) | 10/10 | All checks passed on these fixed cases after both fixes |
+
+Reproduce with your own Bedrock credentials:
+
+```bash
+python scripts/live_stress.py --output /tmp/basketbrief-live-probes.json --repeats 2
+```
+
+This is a small application-level regression probe, not a broad attack benchmark, model-only refusal score, security certification or estimate of field accuracy. Cases informed the fixes; there is no held-out test set. The deterministic guards remain part of every live run, and the JSON records fallback follow-ups as well as model completion. All three batches are published, including failures.
+
 ## Final presentation recording
 
 The 2026-09-14 replacement film records an isolated fictional workspace through actual browser actions against the public service. It opens the contributor's question, uploads the synthetic receipt, inspects the original, approves the first report, submits a late correction, observes HTTP 409 when reusing the first approval, resolves returned=12, and checks both donor inboxes. Both donor roles retained two report snapshots; the final counts were 88 delivered and 12 returned. There were no browser page errors in this recorded journey. Waiting intervals are edited; the film is not a latency benchmark.
@@ -12,7 +36,7 @@ The separate team screenshots belong to the synthetic staging test described bel
 
 ## Signed-in team and mailbox checks
 
-The final team extension passed a full 121-test run (one upstream deprecation warning). The earlier coverage percentages below belong to the 105-test document-reader build, not this larger extension.
+The earlier team extension passed a full 121-test run (one upstream deprecation warning). The earlier coverage percentages below belong to the 105-test document-reader build, not this larger extension.
 
 A live staging journey used separate browser accounts for coordinator, contributor and donor. The contributor's expense appeared in the coordinator's browser through polling, with a persistent notification. The live Strands agent asked the actual contributor for the missing receipt. Attaching the synthetic receipt completed that same expense; the reader returned USD 60.00, and the team agent prepared a draft. The coordinator opened the original and approved the report. The donor saw zero reports before approval and one afterward. A 390-pixel contributor viewport had no horizontal overflow.
 
@@ -95,7 +119,7 @@ The fix has two parts:
 - the parser accepts a labelled field/value followed by normal punctuation;
 - replies to scoped field questions are recorded before another model turn only when every mentioned field has exactly one grounded value.
 
-If a reply says returned may be 12 or 10, it remains pending. The reliability gate narrows accepted input; it does not pick one possibility.
+The pre-model gate leaves multiple grounded return values for review. The later live probe above exposed a separate tool path that still accepted one candidate; that storage path is now guarded too.
 
 ## 4. What the source guards establish
 

@@ -73,6 +73,8 @@ The identity needs `bedrock:InvokeModel` and `bedrock:InvokeModelWithResponseStr
 
 ## What is measured
 
+**125 automated tests passed.** A separate real Strands/Bedrock probe ran five fixed synthetic challenges twice: the final build passed all checks in 10/10 runs after the probes exposed two defects that were fixed. [The evaluation](docs/EVALUATION.md#live-challenge-probes-defects-found-and-retested) includes all three batches, failures and limits. Reproduce with `python scripts/live_stress.py --output /tmp/basketbrief-probes.json`.
+
 `scripts/baseline.py` executes the complete **scripted local** flow and counts persisted questions, contributor replies, coordinator approvals and donor deliveries. These are system interactions, not human effort or minutes saved. It includes both contributor replies and both approvals.
 
 We withdrew the earlier “41 human acts → 2” headline after independent review: it counted manual transcription and checking in detail but reduced the agent-assisted side to approval decisions. Repeatable arithmetic did not make that a fair comparison. We now report directly observed behavior and describe human review as necessary.
@@ -87,7 +89,7 @@ We withdrew the earlier “41 human acts → 2” headline after independent rev
 - The original image remains available to the coordinator. Matching a model-generated transcription cannot establish that it matches the pixels.
 - Delivery means a persisted inbox message inside this application, not external email delivery, a read receipt, or proof that aid reached a household.
 - Demonstration role switching intentionally grants the visitor control of fictional participants. `/team` has separate accounts, expiring sessions, project memberships and revocation. This is a hackathon prototype, not an independently audited financial system.
-- Unit tests cover deterministic boundaries. They do not establish resistance to every prompt injection. Live model adversarial results, if measured, are reported separately.
+- Unit tests cover deterministic boundaries. They do not establish resistance to every prompt injection. The small live challenge probe is reported separately, with its guards enabled.
 
 ## Layout
 
