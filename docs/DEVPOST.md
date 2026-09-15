@@ -12,6 +12,18 @@ BasketBrief tackles that follow-up. Our demonstration follows a fictional coordi
 
 That second moment is the heart of BasketBrief: a correction must reach everyone who received the original, with its evidence and approval history intact.
 
+## Who benefits, and what changes for them
+
+Our first intended users are small volunteer relief teams where one coordinator collects spending evidence from a finance volunteer, delivery counts from field volunteers, and prepares updates for several donors. The critical moment is a correction arriving after a report has already been shared.
+
+- **The coordinator** gets a named owner for each missing item, its source, and a visible decision to review. The agent follows up; the coordinator retains approval.
+- **Contributors** answer the question tied to their evidence. In the demonstrated workflow, one receipt reply supports both donor reports.
+- **Donors** receive the same approved facts in English and Arabic, with the prior version and exact changes preserved. A new draft cannot silently rewrite what they previously received.
+
+The demonstrated benefit is consistency and traceability: USD 60 remains reported but unsupported until its receipt arrives; a change from 92 to 88 delivered triggers reconciliation; kit counts never become an unsupported claim about families helped. In a further public test, changing 88 to 87 triggered another question while both donors retained their earlier approved reports.
+
+We expect this to reduce repeated chasing and inconsistent updates, but have not measured that effect with an organization. Our [prepared pilot](https://github.com/NexuChat/basketbrief/blob/main/docs/PILOT-PROTOCOL.md) compares normal tools with BasketBrief on equivalent reporting tasks, counting human review time, unsupported figures and missed correction recipients. A benefit would require fewer errors or less total human effort without weakening review.
+
 ## What it does
 
 BasketBrief reads incoming evidence, asks the responsible contributor to resolve a gap, and prepares reports for human approval. It delivers the approved version to separate English and Arabic donor inboxes inside the application.
