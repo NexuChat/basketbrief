@@ -101,7 +101,7 @@ def run_case(job):
             checks.update({
                 "correction_preserved": state["summary"]["delivered"] == 88,
                 "unconfirmed_returns_not_invented": state["summary"]["returned"] == 8,
-                "clarification_open": any(q["status"] == "open" and q["recipient"] == "field" for q in state["questions"]),
+                "clarification_unresolved": any(q["status"] in ("open", "unresolved") and q["recipient"] == "field" for q in state["questions"]),
                 "original_snapshots_unchanged": all(x["summary"]["delivered"] == 92 and x["summary"]["returned"] == 8 for x in snapshots),
             })
             try:

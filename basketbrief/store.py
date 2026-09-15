@@ -268,14 +268,17 @@ class Store:
             e = self.get_evidence(c, pid, eid, "field")
             if e["status"] == "accepted":
                 return {"recorded": False}
-            numbers = numeric_values(e["text"])
             # A field the source does not state is dropped, never recorded and never fatal:
             # losing one unsupported number must not cost us the counts the source does state.
             ignored = {}
             for key, v in list(vals.items()):
                 if v is None:
                     continue
-                if type(v) is not int or not 0 <= v <= 10000 or v not in field_values(e["text"], key):
+                candidates = field_values(e["text"], key)
+                if len(candidates) > 1:
+                    ignored[key] = "multiple possible values for this field; contributor clarification required"
+                    vals[key] = None
+                elif type(v) is not int or not 0 <= v <= 10000 or v not in candidates:
                     ignored[key] = "not explicitly associated with this field in the source, or denied"
                     vals[key] = None
                 elif key == "households" and not states_household_count(e["text"], v):
@@ -285,7 +288,7 @@ class Store:
             loaded, delivered, returned, households = (vals["loaded"], vals["delivered"],
                                                        vals["returned"], vals["households"])
             if all(v is None for v in vals.values()):
-                raise Conflict("None of those counts appear in this source. Read it again, or defer it.")
+                raise Conflict("None of those counts is unambiguously stated for its field in this source. Read it again, or defer it for clarification.")
             for key, v in vals.items():
                 if v is not None:
                     self.set_fact(c, pid, key, v, eid)

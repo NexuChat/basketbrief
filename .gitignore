@@ -27,3 +27,11 @@ video3/
 
 basketbrief/static/BasketBrief-final-20260914.mp4
 basketbrief/static/BasketBrief-polished-20260914.mp4
+
+# Runtime uploads, databases, session state and local credentials are private.
+run/
+.env
+.env.*
+!.env.example
+*.db-wal
+*.db-shm
